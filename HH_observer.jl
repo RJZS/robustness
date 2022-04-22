@@ -17,7 +17,7 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 γ = 5.0
 
 # Modelling errors
-# Note r_m = -40, r_h = -62, r_n = -53
+# True values are: r_m = -40, r_h = -62, r_n = -53
 err = 0.04 # Maximum proportional error in r.
 half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
 

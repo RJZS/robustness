@@ -4,8 +4,7 @@ function x_sample(x, err)
 end
 
 # Sodium activation
-function gating_m(v)
-    r = -40.;
+function gating_m(v, r=-40.)
     k = 9.;             #15 in izhikevich
     Vmax = -38.;
     std = 30.;
@@ -13,24 +12,11 @@ function gating_m(v)
     Cbase = 0.04;
     τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
     σ = 1 ./ (1+exp(-(v-r)/k));
-    return τ, σ
-end 
-
-# with uncertainty
-function gating_m(v, r_sample)
-    k = 9.;             #15 in izhikevich
-    Vmax = -38.;
-    std = 30.;
-    Camp = 0.46;
-    Cbase = 0.04;
-    τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
-    σ = 1 ./ (1+exp(-(v-r_sample)/k));
     return τ, σ
 end 
 
 # Sodium inactivation
-function gating_h(v)
-    r = -62.;
+function gating_h(v, r=-62.)
     k = -7.;
     Vmax = -67.;
     std = 20.;
@@ -38,24 +24,11 @@ function gating_h(v)
     Cbase = 1.2;
     τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
     σ = 1 ./ (1+exp(-(v-r)/k));
-    return τ, σ
-end
-
-# with uncertainty
-function gating_h(v, r_sample)
-    k = -7.;
-    Vmax = -67.;
-    std = 20.;
-    Camp = 7.4;
-    Cbase = 1.2;
-    τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
-    σ = 1 ./ (1+exp(-(v-r_sample)/k));
     return τ, σ
 end
 
 # Potassium activation
-function gating_n(v)
-    r = -53.;
+function gating_n(v, r=-53.)
     k = 15.;
     Vmax = -79.;
     std = 50.;
@@ -63,18 +36,6 @@ function gating_n(v)
     Cbase = 1.1;
     τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
     σ = 1 ./ (1+exp(-(v-r)/k));
-    return τ, σ
-end
-
-# with uncertainty
-function gating_n(v, r_sample)
-    k = 15.;
-    Vmax = -79.;
-    std = 50.;
-    Camp = 4.7;
-    Cbase = 1.1;
-    τ = Cbase + Camp*exp(-(v-Vmax).^2/std^2);
-    σ = 1 ./ (1+exp(-(v-r_sample)/k));
     return τ, σ
 end
 
