@@ -16,6 +16,11 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 α = 0.5
 γ = 5.0
 
+# Modelling errors
+# Note r_m = -40, r_h = -62, r_n = -53
+err = 0.04 # Maximum proportional error in r.
+half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
+
 # Initial conditions
 x₀ = [0 0 0 0]; 
 x̂₀ = [-60 0.5 0.5 0.5];
@@ -25,10 +30,10 @@ P₀ = Matrix(I, 7, 7);
 
 # Integration initial conditions and parameters
 dt = 0.01
-Tfinal = 100.
+Tfinal = 200. # 100.
 tspan = (0.,Tfinal)
 z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,49) Ψ₀]
-p = (Iapp,c,g,E,(α,γ))
+p = (Iapp,c,g,E,(α,γ),half_acts)
 
 # Integrate
 prob = ODEProblem(HH_observer!,z₀,tspan,p)
