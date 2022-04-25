@@ -18,7 +18,7 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 
 # Modelling errors
 # True values are: r_m = -40, r_h = -62, r_n = -53
-err = 0. # Maximum proportional error in r.
+err = 0.04 # Maximum proportional error in r.
 half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
 
 # Initial conditions
@@ -30,7 +30,7 @@ P₀ = Matrix(I, 7, 7);
 
 # Integration initial conditions and parameters
 dt = 0.01
-Tfinal = 100.
+Tfinal = 200.
 tspan = (0.,Tfinal)
 z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,49) Ψ₀ 0 0]
 p = (Iapp,c,g,E,(α,γ),half_acts)
@@ -54,34 +54,36 @@ if save_data
 end
 
 ## Plots
+pltstart = 100
+pltstartidx = 1+pltstart*10
 
 plt0 = plot(t,v)
 plt0 = plot!(t,v̂,linecolor="red",linestyle= :dash)
 
 # gNa/c
-plt1 = plot([0,Tfinal],[g[1]/c,g[1]/c],linecolor="black",linestyle=:dash,labels="gNa/c")
-plt1 = plot!(t,θ̂[1,:],linecolor="red")
+plt1 = plot([pltstart,Tfinal],[g[1]/c,g[1]/c],linecolor="black",linestyle=:dash,labels="gNa/c")
+plt1 = plot!(t[pltstartidx:end],θ̂[1,pltstartidx:end],linecolor="red")
 
 # gK/c
-plt2 = plot([0,Tfinal],[g[2]/c,g[2]/c],linecolor="black",linestyle=:dash,labels="gK/c")
-plt2 = plot!(t,θ̂[2,:],linecolor="red")
+plt2 = plot([pltstart,Tfinal],[g[2]/c,g[2]/c],linecolor="black",linestyle=:dash,labels="gK/c")
+plt2 = plot!(t[pltstartidx:end],θ̂[2,pltstartidx:end],linecolor="red")
 
 # gL/c
-plt3 = plot([0,Tfinal],[g[3]/c,g[3]/c],linecolor="black",linestyle=:dash,labels="gL/c")
-plt3 = plot!(t,θ̂[3,:],linecolor="red")
+plt3 = plot([pltstart,Tfinal],[g[3]/c,g[3]/c],linecolor="black",linestyle=:dash,labels="gL/c")
+plt3 = plot!(t[pltstartidx:end],θ̂[3,pltstartidx:end],linecolor="red")
 
 # gNa*ENa/c
-plt4 = plot([0,Tfinal],[g[1]*E[1]/c,g[1]*E[1]/c],linecolor="black",linestyle=:dash,labels="gNa*ENa/c")
-plt4 = plot!(t,θ̂[4,:],linecolor="red")
+plt4 = plot([pltstart,Tfinal],[g[1]*E[1]/c,g[1]*E[1]/c],linecolor="black",linestyle=:dash,labels="gNa*ENa/c")
+plt4 = plot!(t[pltstartidx:end],θ̂[4,pltstartidx:end],linecolor="red")
 
 # gK*EK/c
-plt5 = plot([0,Tfinal],[g[2]*E[2]/c,g[2]*E[2]/c],linecolor="black",linestyle=:dash,labels="gK*EK/c")
-plt5 = plot!(t,θ̂[5,:],linecolor="red")
+plt5 = plot([pltstart,Tfinal],[g[2]*E[2]/c,g[2]*E[2]/c],linecolor="black",linestyle=:dash,labels="gK*EK/c")
+plt5 = plot!(t[pltstartidx:end],θ̂[5,pltstartidx:end],linecolor="red")
 
 # gL*EL/c
-plt6 = plot([0,Tfinal],[g[3]*E[3]/c,g[3]*E[3]/c],linecolor="black",linestyle=:dash,labels="gL*EL/c")
-plt6 = plot!(t,θ̂[6,:],linecolor="red")
+plt6 = plot([pltstart,Tfinal],[g[3]*E[3]/c,g[3]*E[3]/c],linecolor="black",linestyle=:dash,labels="gL*EL/c")
+plt6 = plot!(t[pltstartidx:end],θ̂[6,pltstartidx:end],linecolor="red")
 
 # 1/c
-plt7 = plot([0,Tfinal],[1/c,1/c],linecolor="black",linestyle=:dash,labels="1/c")
-plt7 = plot!(t,θ̂[7,:],linecolor="red")
+plt7 = plot([pltstart,Tfinal],[1/c,1/c],linecolor="black",linestyle=:dash,labels="1/c")
+plt7 = plot!(t[pltstartidx:end],θ̂[7,pltstartidx:end],linecolor="red")
