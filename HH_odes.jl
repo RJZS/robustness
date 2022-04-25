@@ -182,13 +182,13 @@ function HH_s_observer!(dz,z,p,t)
     Ψ = z[15+49+1:15+49+7]
     s_hat = z[73]
 
-    (τm̂,σm̂) = gating_m(v, rm);
-    (τĥ,σĥ) = gating_h(v, rh);
-    (τn̂,σn̂) = gating_n(v, rn);
+    (τm̂,σm̂) = gating_m(v̂, rm);
+    (τĥ,σĥ) = gating_h(v̂, rh);
+    (τn̂,σn̂) = gating_n(v̂, rn);
 
-    ϕ̂ = [-m̂^3*ĥ*v ...
-         -n̂^4*v ... 
-         -v ...
+    ϕ̂ = [-m̂^3*ĥ*v̂ ...
+         -n̂^4*v̂ ... 
+         -v̂ ...
          m̂^3*ĥ ...
          n̂^4 ...
          1 ...
@@ -198,9 +198,9 @@ function HH_s_observer!(dz,z,p,t)
     dm̂ = 1/τm̂*(-m̂ + σm̂);
     dĥ = 1/τĥ*(-ĥ + σĥ);
     dn̂ = 1/τn̂*(-n̂ + σn̂);
-    ds_hat = dsyn(v, s_hat) + γ*(1+Ψ'*P*Ψ)*(s-s_hat)
+    ds_hat = dsyn(v̂, s) + γ*(1+Ψ'*P*Ψ)*(s-s_hat)
 
-    dθ̂ = γ*P*Ψ*(s-s_hat);
+    dθ̂ = γ*P*Ψ*(v-v̂);
     dΨ = -γ*Ψ + ϕ̂; 
     dP = α*P - ((P*Ψ)*(P*Ψ)');
     dP = (dP+dP')/2;
