@@ -30,8 +30,8 @@ gCaLinCa = 4.; # Hardcoded value of gCaL for use in [Ca] dynamics
 gCaTinCa = 0.5;
 
 # Observer parameters
-α = 0.025
-γ = 5.0
+α = 0.001
+γ = 10.0
 
 # Initial conditions
 x₀ = init_neur(-70.);
@@ -41,7 +41,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0];
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal=3000.0
+Tfinal=20000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -61,7 +61,8 @@ tf2=370 # Ending time of first pulse
 p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,gCaLinCa,gCaTinCa)
 
 # Simulation
-prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
+# Using the calcium observer
+prob = ODEProblem(CBM_Ca_observer!,u0,tspan,p) # Simulation without noise (ODE)
 sol = solve(prob,dtmax=0.1)
 
 
@@ -69,3 +70,7 @@ sol = solve(prob,dtmax=0.1)
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
+
+# Ca versus its estimate
+p2 = plot(sol.t, sol[13,:])
+plot!(sol.t, sol[26,:])

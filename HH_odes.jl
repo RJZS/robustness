@@ -194,7 +194,7 @@ function HH_s_observer!(dz,z,p,t)
          1 ...
          Iapp(t)];
 
-    dv̂ = dot(ϕ̂,θ̂) - s_hat
+    dv̂ = dot(ϕ̂,θ̂) - s_hat # Shouldn't this be s?
     dm̂ = 1/τm̂*(-m̂ + σm̂);
     dĥ = 1/τĥ*(-ĥ + σĥ);
     dn̂ = 1/τn̂*(-n̂ + σn̂);
