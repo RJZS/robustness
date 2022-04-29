@@ -259,8 +259,8 @@ function CBM_Ca_observer!(du,u,p,t)
     gCaT=p[14] # T-type calcium current maximal conductance
     gH=p[15] # H-current maximal conductance
     gl=p[16] # Leak current maximal conductance
-    gCaLinCa=p[17]
-    gCaTinCa=p[18]
+    # gCaLinCa=p[17]
+    # gCaTinCa=p[18]
 
     # Variables
     V=u[1] # Membrane potential
@@ -306,7 +306,7 @@ function CBM_Ca_observer!(du,u,p,t)
     du[10] = (1/tau_mCaT(V)) * (mCaTinf(V) - mCaT)
     du[11] = (1/tau_hCaT(V)) * (hCaTinf(V) - hCaT)
     du[12] = (1/tau_mH(V)) * (mHinf(V) - mH)
-    du[13] = (1/tau_Ca) * ((-αCa*gCaLinCa*mCaL*(V-VCa))+(-β*gCaTinCa*mCaT*hCaT*(V-VCa)) - Ca) 
+    du[13] = (1/tau_Ca) * ((-αCa*gCaL*mCaL*(V-VCa))+(-β*gCaT*mCaT*hCaT*(V-VCa)) - Ca) 
 
     # Adaptive observer
     Vh=u[14] # Membrane potential
@@ -357,8 +357,8 @@ function CBM_Ca_observer!(du,u,p,t)
     du[24] = (1/tau_hCaT(Vh)) * (hCaTinf(Vh) - hCaTh)
     du[25] = (1/tau_mH(Vh)) * (mHinf(Vh) - mHh)
 
-    du[26] = (1/tau_Ca) * ((-αCa*gCaLinCa*mCaLh*(Vh-VCa))
-            +(-β*gCaTinCa*mCaTh*hCaTh*(Vh-VCa)) - Ca) 
+    du[26] = (1/tau_Ca) * ((-αCa*gCaL*mCaLh*(Vh-VCa))
+            +(-β*gCaT*mCaTh*hCaTh*(Vh-VCa)) - Ca) 
             + γ*(1+Ψ'*P*Ψ)*(Ca-Cah)
 
     du[27:28]= γ*P*Ψ*(Ca-Cah); # dθ̂ 
