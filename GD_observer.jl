@@ -26,6 +26,7 @@ gCaL=4.; # L-type calcium current maximal conductance
 gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
+# Not using these atm.
 gCaLinCa = 4.; # Hardcoded value of gCaL for use in [Ca] dynamics
 gCaTinCa = 0.5;
 
@@ -74,3 +75,7 @@ ylabel!("V")
 # Ca versus its estimate
 p2 = plot(sol.t, sol[13,:])
 plot!(sol.t, sol[26,:])
+
+# Parameter estimates
+p3 = plot(sol.t,sol[27,:])
+p4 = plot(sol.t,sol[28,:])
