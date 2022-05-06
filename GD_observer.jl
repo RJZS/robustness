@@ -27,18 +27,18 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α = 0.0004
-γ = 1
+α = 0.0001
+γ = 500
 
 # Initial conditions
 x₀ = init_neur(-70.);
 x̂₀ = [-60 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5];
-θ̂₀ = [1 1];
+θ̂₀ = [.1 .1];
 P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # [Ψ_z Ψ_y]
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal=10000.0
+Tfinal=20000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -55,7 +55,7 @@ tf2=370 # Ending time of first pulse
 
 ## Current-clamp experiment
 # Parameter vector for simulations
-p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,gCaLinCa,gCaTinCa)
+p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl)
 
 # Simulation
 # Using the calcium observer
@@ -69,8 +69,8 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 # Ca versus its estimate
-i = 80000
-j = 100000
+i = 220000
+j = lastindex(sol[1,:])
 p2 = plot(sol.t[i:j], sol[13,i:j])
 plot!(sol.t[i:j], sol[26,i:j])
 

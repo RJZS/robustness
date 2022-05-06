@@ -259,8 +259,6 @@ function CBM_Ca_observer!(du,u,p,t)
     gCaT=p[14] # T-type calcium current maximal conductance
     gH=p[15] # H-current maximal conductance
     gl=p[16] # Leak current maximal conductance
-    # gCaLinCa=p[17]
-    # gCaTinCa=p[18]
 
     # Variables
     V=u[1] # Membrane potential
