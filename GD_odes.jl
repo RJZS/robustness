@@ -327,8 +327,10 @@ function CBM_Ca_observer!(du,u,p,t)
     P = (P+P')/2
     Ψ = u[28+4+1:28+4+2]
 
-    ϕ̂ = 1/C*[-mCaLh * (Vh-VCa) ...
+    ϕ̂_z= 1/C*[-mCaLh * (Vh-VCa) ...
             -mCaTh * hCaTh * (Vh-VCa)];
+    ϕ̂_y= 1/tau_Ca*[-αCa * mCaLh * (Vh-VCa) ...
+            -β * mCaTh * hCaTh * (Vh-VCa)];
 
     bh = (1/C) * (-gNa*mNah*hNah*(Vh-VNa) +
             # Potassium Currents
@@ -342,7 +344,7 @@ function CBM_Ca_observer!(du,u,p,t)
             +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
 
     # dV^
-    du[14] = dot(ϕ̂,θ̂) + bh
+    du[14] = dot(ϕ̂_z,θ̂) + bh
 
     # Observer's internal dynamics
     du[15] = (1/tau_mNa(Vh)) * (mNainf(Vh) - mNah)
@@ -357,12 +359,11 @@ function CBM_Ca_observer!(du,u,p,t)
     du[24] = (1/tau_hCaT(Vh)) * (hCaTinf(Vh) - hCaTh)
     du[25] = (1/tau_mH(Vh)) * (mHinf(Vh) - mHh)
 
-    du[26] = (1/tau_Ca) * ((-αCa*gCaL*mCaLh*(Vh-VCa))
-            +(-β*gCaT*mCaTh*hCaTh*(Vh-VCa)) - Ca) 
+    du[26] = dot(ϕ̂_y,[gCaL gCaT]) - Ca/tau_Ca 
             + γ*(1+Ψ'*P*Ψ)*(Ca-Cah)
 
     du[27:28]= γ*P*Ψ*(Ca-Cah); # dθ̂ 
-    du[28+4+1:28+4+2] = -γ*Ψ + ϕ̂;  # dΨ
+    du[28+4+1:28+4+2] = -γ*Ψ + ϕ̂_z;  # dΨ
     dP = α*P - ((P*Ψ)*(P*Ψ)');
     dP = (dP+dP')/2;
     du[28+1:28+4] = dP[:]

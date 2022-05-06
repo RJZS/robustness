@@ -1,5 +1,5 @@
 using Plots
-using DifferentialEquations
+using DifferentialEquations, LinearAlgebra
 
 include("GD_odes.jl")
 
