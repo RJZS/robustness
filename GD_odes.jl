@@ -325,12 +325,12 @@ function CBM_Ca_observer!(du,u,p,t)
     θ̂= u[27:28]
     P = reshape(u[28+1:28+4],2,2);    
     P = (P+P')/2
-    Ψ = u[28+4+1:28+4+2]
+    Ψ_z = u[28+4+1:28+4+2]
+    Ψ_y = u[28+4+3:28+4+4]
 
     ϕ̂_z= 1/C*[-mCaLh * (Vh-VCa) ...
             -mCaTh * hCaTh * (Vh-VCa)];
-    ϕ̂_y= 1/tau_Ca*[-αCa * mCaLh * (Vh-VCa) ...
-            -β * mCaTh * hCaTh * (Vh-VCa)];
+    ϕ̂_y= (C/tau_Ca) * ϕ̂_z .* [αCa; β]
 
     bh = (1/C) * (-gNa*mNah*hNah*(Vh-VNa) +
             # Potassium Currents
@@ -343,8 +343,8 @@ function CBM_Ca_observer!(du,u,p,t)
             # Stimulation currents
             +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
 
-    # dV^
-    du[14] = dot(ϕ̂_z,θ̂) + bh
+    # dV^ (part of intrinsic dynamics z).
+    du[14] = dot(ϕ̂_z,θ̂) + bh + γ*(Ψ_z'*P*Ψ_y)*(Ca-Cah)
 
     # Observer's internal dynamics
     du[15] = (1/tau_mNa(Vh)) * (mNainf(Vh) - mNah)
@@ -359,12 +359,14 @@ function CBM_Ca_observer!(du,u,p,t)
     du[24] = (1/tau_hCaT(Vh)) * (hCaTinf(Vh) - hCaTh)
     du[25] = (1/tau_mH(Vh)) * (mHinf(Vh) - mHh)
 
-    du[26] = dot(ϕ̂_y,[gCaL gCaT]) - Ca/tau_Ca 
-            + γ*(1+Ψ'*P*Ψ)*(Ca-Cah)
+    # Ca dynamics (output y)
+    du[26] = dot(ϕ̂_y,θ̂) - Ca/tau_Ca 
+            + γ*(1+Ψ_y'*P*Ψ_y)*(Ca-Cah)
 
-    du[27:28]= γ*P*Ψ*(Ca-Cah); # dθ̂ 
-    du[28+4+1:28+4+2] = -γ*Ψ + ϕ̂_z;  # dΨ
-    dP = α*P - ((P*Ψ)*(P*Ψ)');
+    du[27:28]= γ*P*Ψ_y*(Ca-Cah); # dθ̂ 
+    du[28+4+1:28+4+2] = -γ*Ψ_z + ϕ̂_z;  # dΨ_z
+    du[28+4+3:28+4+4] = -γ*Ψ_y + ϕ̂_y;  # dΨ_y
+    dP = α*P - ((P*Ψ_y)*(P*Ψ_y)');
     dP = (dP+dP')/2;
     du[28+1:28+4] = dP[:]
 end

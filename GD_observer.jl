@@ -26,23 +26,19 @@ gCaL=4.; # L-type calcium current maximal conductance
 gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
-# Not using these atm.
-gCaLinCa = 4.; # Hardcoded value of gCaL for use in [Ca] dynamics
-gCaTinCa = 0.5;
-
 # Observer parameters
-α = 0.001
-γ = 10.0
+α = 0.0004
+γ = 1
 
 # Initial conditions
 x₀ = init_neur(-70.);
 x̂₀ = [-60 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5];
 θ̂₀ = [1 1];
 P₀ = Matrix(I, 2, 2);
-Ψ₀ = [0 0];
+Ψ₀ = [0 0 0 0]; # [Ψ_z Ψ_y]
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal=20000.0
+Tfinal=10000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -73,9 +69,11 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 # Ca versus its estimate
-p2 = plot(sol.t, sol[13,:])
-plot!(sol.t, sol[26,:])
+i = 80000
+j = 100000
+p2 = plot(sol.t[i:j], sol[13,i:j])
+plot!(sol.t[i:j], sol[26,i:j])
 
 # Parameter estimates
-p3 = plot(sol.t,sol[27,:])
-p4 = plot(sol.t,sol[28,:])
+p3 = plot(sol.t,sol[27,:]) # gCaL
+p4 = plot(sol.t,sol[28,:]) # gCaT
