@@ -27,8 +27,8 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α = 0.0001
-γ = 500
+α = 0.0005
+γ = 1
 
 # Initial conditions
 x₀ = init_neur(-70.);
@@ -38,12 +38,12 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # [Ψ_z Ψ_y]
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal=20000.0
+Tfinal= 10000.0 # 40000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
 # Constant current
-Iapp=4.
+Iapp=4. # Overwritten in the function by a hardcoded input.
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -53,13 +53,17 @@ I2=0. # Amplitude of second pulse
 ti2=350 # Starting time of second pulse
 tf2=370 # Ending time of first pulse
 
+# Have hardcoded the input current into the ODE fn.
+# # High frequency noise input 
+# Isines = .5*sin.(0.01*sol.t)+0.5*sin.(0.05*sol.t)
+
 ## Current-clamp experiment
 # Parameter vector for simulations
-p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl)
+p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl) #, 4, 0.5)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_Ca_observer!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
 sol = solve(prob,dtmax=0.1)
 
 
@@ -69,10 +73,10 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 # Ca versus its estimate
-i = 220000
-j = lastindex(sol[1,:])
-p2 = plot(sol.t[i:j], sol[13,i:j])
-plot!(sol.t[i:j], sol[26,i:j])
+# i = 220000
+# j = lastindex(sol[1,:])
+p2 = plot(sol.t, sol[13,:])
+plot!(sol.t, sol[26,:])
 
 # Parameter estimates
 p3 = plot(sol.t,sol[27,:]) # gCaL
