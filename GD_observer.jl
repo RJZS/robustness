@@ -14,7 +14,7 @@ const Vl = -50.; # Reversal potential of leak channels
 
 const C=0.1; # Membrane capacitance
 const αCa=0.1; # Calcium dynamics (L-current)
-const β=0.1 # Calcium dynamics (T-current)
+β=0.05 # Calcium dynamics (T-current)
 
 gl=0.3; # Leak current maximal conductance
 gNa=100.; # Sodium current maximal conductance
@@ -23,22 +23,22 @@ gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
 gKCa=8.; # Calcium-activated potassium current maximal conductance
 gCaL=4.; # L-type calcium current maximal conductance
-gCaT=0.5; # T-type calcium current maximal conductance
+gCaT=0.2; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α = 0.0005
-γ = 1
+γ = 5
 
 # Initial conditions
 x₀ = init_neur(-70.);
-x̂₀ = [-60 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5];
+x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
 θ̂₀ = [.1 .1];
 P₀ = Matrix(I, 2, 2);
-Ψ₀ = [0 0 0 0]; # [Ψ_z Ψ_y]
+Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 10000.0 # 40000.0
+Tfinal= 35000.0 # 4000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition

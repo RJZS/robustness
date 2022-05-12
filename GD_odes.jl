@@ -415,7 +415,7 @@ function CBM_Ca_observer!(du,u,p,t)
     Ca=u[13] # Intracellular calcium concentration
     
     # Hardcoded input current
-    uin = 4 .+ 0.2*sin.(0.01*t)+0.2*sin.(0.05*t)
+    uin = 4 # .+ 0.2*sin.(0.01*t)+0.2*sin.(0.05*t)
 
     θ = [gCaL gCaT]
     ϕ = 1/C*[-mCaL*(V-VCa) ...
@@ -642,7 +642,7 @@ function CBM_2D_observer!(du,u,p,t)
     du[25] = (1/tau_mH(V)) * (mHinf(V) - mHh)
 
     # Ca dynamics (second output)
-    du[26] = dot(ϕ̂[2,:],θ̂) - Ca/tau_Ca 
+    du[26] = dot(ϕ̂[2,:],θ̂) - Cah/tau_Ca 
             + dot(ofp[2,:],e)
 
     # Update observer terms
