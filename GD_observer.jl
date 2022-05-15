@@ -13,8 +13,8 @@ const VH= -40.; # Reversal potential for the H-current (permeable to both sodium
 const Vl = -50.; # Reversal potential of leak channels
 
 const C=0.1; # Membrane capacitance
-const αCa=0.1; # Calcium dynamics (L-current)
-β=0.05 # Calcium dynamics (T-current)
+αCa=0.1; # Calcium dynamics (L-current)
+β=0.04 # Calcium dynamics (T-current)
 
 gl=0.3; # Leak current maximal conductance
 gNa=100.; # Sodium current maximal conductance
@@ -23,12 +23,12 @@ gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
 gKCa=8.; # Calcium-activated potassium current maximal conductance
 gCaL=4.; # L-type calcium current maximal conductance
-gCaT=0.2; # T-type calcium current maximal conductance
+gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α = 0.0005
-γ = 5
+α = 0.008
+γ = 2
 
 # Initial conditions
 x₀ = init_neur(-70.);
@@ -38,7 +38,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 35000.0 # 4000.0
+Tfinal= 20000.0 # 4000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -64,7 +64,14 @@ p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl) #, 4, 0.5)
 # Simulation
 # Using the calcium observer
 prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
-sol = solve(prob,dtmax=0.1)
+# sol = solve(prob,dtmax=0.1)
+# sol = solve(prob,alg_hints=[:stiff],reltol=1e-8,abstol=1e-8)
+sol = solve(prob,AutoTsit5(Rosenbrock23()))
+# using LSODA
+# sol = solve(prob,lsoda(),reltol=1e-10,abstol=1e-10)
+
+# Alternative from Thiago:
+# sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
 
 
 ## Generation of figures 

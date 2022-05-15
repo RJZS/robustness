@@ -9,31 +9,31 @@ tauX(V,A,B,D,E)=A-B/(1+exp((V+D)/E))
 
 
 # Sodium current
-mNainf(V) = Xinf(V,25.,-5.); tau_mNa(V) = tauX(V,0.75,0.5,100.,-20.)
-hNainf(V) = Xinf(V,40.,10.); tau_hNa(V) = tauX(V,4.0,3.5,50.,-20.)
+mNainf(V,r=25.) = Xinf(V,r,-5.); tau_mNa(V) = tauX(V,0.75,0.5,100.,-20.)
+hNainf(V,r=40.) = Xinf(V,r,10.); tau_hNa(V) = tauX(V,4.0,3.5,50.,-20.)
 
 
 # Potassium currents
-mKdinf(V) = Xinf(V,15.,-10.); tau_mKd(V) = tauX(V,5.0,4.5,30.,-20.)
+mKdinf(V,r=15.) = Xinf(V,r,-10.); tau_mKd(V) = tauX(V,5.0,4.5,30.,-20.)
 
-mAfinf(V) = Xinf(V,80,-10.); tau_mAf(V) = tauX(V,0.75,0.5,100.,-20.)
-hAfinf(V) = Xinf(V,60,5.); tau_hAf(V) = 10*tauX(V,0.75,0.5,100.,-20.)
+mAfinf(V,r=80) = Xinf(V,r,-10.); tau_mAf(V) = tauX(V,0.75,0.5,100.,-20.)
+hAfinf(V,r=60) = Xinf(V,r,5.); tau_hAf(V) = 10*tauX(V,0.75,0.5,100.,-20.)
 
-mAsinf(V) = Xinf(V,60,-10.); tau_mAs(V) = 10*tauX(V,0.75,0.5,100.,-20.)
-hAsinf(V) = Xinf(V,20,5.); tau_hAs(V) = 100*tauX(V,0.75,0.5,100.,-20.)
+mAsinf(V,r=60) = Xinf(V,r,-10.); tau_mAs(V) = 10*tauX(V,0.75,0.5,100.,-20.)
+hAsinf(V,r=20) = Xinf(V,r,5.); tau_hAs(V) = 100*tauX(V,0.75,0.5,100.,-20.)
 
-mKCainf(Ca) = Xinf(Ca,-30.0,-10.); tau_mKCa = 500.
+mKCainf(Ca,r=-30.0) = Xinf(Ca,r,-10.); tau_mKCa = 500.
 
 
 # Calcium currents
-mCaLinf(V) = Xinf(V,45.,-5.); tau_mCaL(V) = tauX(V,6.0,5.5,30.,-20.)
+mCaLinf(V,r=45.) = Xinf(V,r,-5.); tau_mCaL(V) = tauX(V,6.0,5.5,30.,-20.)
 
-mCaTinf(V) = Xinf(V,60,-5.); tau_mCaT(V) = tauX(V,6.0,5.5,30.,-20.)
-hCaTinf(V) = Xinf(V,85,10.); tau_hCaT(V) = 100*tauX(V,6.0,5.5,30.,-20.)
+mCaTinf(V,r=60) = Xinf(V,r,-5.); tau_mCaT(V) = tauX(V,6.0,5.5,30.,-20.)
+hCaTinf(V,r=85) = Xinf(V,r,10.); tau_hCaT(V) = 100*tauX(V,6.0,5.5,30.,-20.)
 
 
 # Cation current (H-current)
-mHinf(V) = Xinf(V,85,10.); tau_mH(V) = 50*tauX(V,6.0,5.5,30.,-20.);
+mHinf(V,r=85) = Xinf(V,r,10.); tau_mH(V) = 50*tauX(V,6.0,5.5,30.,-20.);
 
 
 tau_Ca = 500.
@@ -604,7 +604,7 @@ function CBM_2D_observer!(du,u,p,t)
     Ψ = reshape(u[28+4+1:28+4+4],2,2)
     e = [V - Vh; Ca - Cah]
 
-    ϕ̂  = zeros((2,2))
+    ϕ̂  = zeros(Number, (2,2))
     ϕ̂[1,:] = [-(1/C) * mCaLh * (V-VCa) ...
         -(1/C) * mCaTh * hCaTh * (V-VCa)];
     ϕ̂[2,:] = [-(1/tau_Ca) * αCa * mCaLh * (V-VCa) ...
