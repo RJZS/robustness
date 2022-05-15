@@ -30,6 +30,11 @@ gH=0.; # H-current maximal conductance
 α = 0.008
 γ = 2
 
+# Modelling errors
+# True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
+err = 0. # Maximum proportional error in r.
+half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
+
 # Initial conditions
 x₀ = init_neur(-70.);
 x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
@@ -59,7 +64,7 @@ tf2=370 # Ending time of first pulse
 
 ## Current-clamp experiment
 # Parameter vector for simulations
-p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl) #, 4, 0.5)
+p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts)
 
 # Simulation
 # Using the calcium observer

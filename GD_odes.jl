@@ -1,5 +1,10 @@
 using DifferentialEquations, Plots, Plots.PlotMeasures, LaTeXStrings
 
+# Return a value uniformly sampled from x +/- 100*err %
+function x_sample(x, err)
+    x*(1-err) + 2*err*x*rand()
+end
+
 ## Model gating functions
 # All activation and inactivation curves are defined by the Boltzman function
 Xinf(V,A,B)=1/(1+exp((V+A)/B))
@@ -534,6 +539,8 @@ function CBM_2D_observer!(du,u,p,t)
     gH=p[15] # H-current maximal conductance
     gl=p[16] # Leak current maximal conductance
 
+    half_acts = p[17] # Estimated half-activations (for uncertain model)
+
     # Variables
     V=u[1] # Membrane potential
     mNa=u[2] # Sodium current activation
@@ -636,9 +643,9 @@ function CBM_2D_observer!(du,u,p,t)
     du[19] = (1/tau_hAf(V)) * (hAfinf(V) - hAfh)
     du[20] = (1/tau_mAs(V)) * (mAsinf(V) - mAsh)
     du[21] = (1/tau_hAs(V)) * (hAsinf(V) - hAsh)
-    du[22] = (1/tau_mCaL(V)) * (mCaLinf(V) - mCaLh)
-    du[23] = (1/tau_mCaT(V)) * (mCaTinf(V) - mCaTh)
-    du[24] = (1/tau_hCaT(V)) * (hCaTinf(V) - hCaTh)
+    du[22] = (1/tau_mCaL(V)) * (mCaLinf(V,half_acts[1]) - mCaLh)
+    du[23] = (1/tau_mCaT(V)) * (mCaTinf(V,half_acts[2]) - mCaTh)
+    du[24] = (1/tau_hCaT(V)) * (hCaTinf(V,half_acts[3]) - hCaTh)
     du[25] = (1/tau_mH(V)) * (mHinf(V) - mHh)
 
     # Ca dynamics (second output)
