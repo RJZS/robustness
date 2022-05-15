@@ -32,7 +32,7 @@ gH=0.; # H-current maximal conductance
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
-err = 0. # Maximum proportional error in r.
+err = 0.05 # Maximum proportional error in r.
 half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 
 # Initial conditions
@@ -43,7 +43,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 20000.0 # 4000.0
+Tfinal= 30000.0 # 4000.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -78,7 +78,6 @@ sol = solve(prob,AutoTsit5(Rosenbrock23()))
 # Alternative from Thiago:
 # sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
 
-
 ## Generation of figures 
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
@@ -93,3 +92,16 @@ plot!(sol.t, sol[26,:])
 # Parameter estimates
 p3 = plot(sol.t,sol[27,:]) # gCaL
 p4 = plot(sol.t,sol[28,:]) # gCaT
+
+# Truncated figures
+j = size(sol)[3]
+i = round(Int,4*j/5)
+p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
+ylabel!("V")
+
+p2t = plot(sol.t[i:j], sol[13,i:j])
+plot!(sol.t[i:j], sol[26,i:j])
+
+# Parameter estimates
+p3t = plot(sol.t[i:j],sol[27,i:j]) # gCaL
+p4t = plot(sol.t[i:j],sol[28,i:j]) # gCaT
