@@ -8,7 +8,7 @@ function sigmoid(x, k=1)
 end
 
 function element(V, a, delta)
-    a .* tanh.(V .- delta)
+    a * tanh(V - delta)
 end
 
 function LR_ODE!(du,u,p,t)
@@ -37,9 +37,9 @@ function LR_ODE!(du,u,p,t)
     Vus = u[3]
 
     # ODEs
-    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp)
-                -element(Vs,asn,dsn) -element(Vus,ausp,dusp)
-                +Iapp
+    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
+                -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
+                Iapp
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 end

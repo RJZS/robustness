@@ -10,8 +10,8 @@ tau_us = 50*50
 
 afn = -2
 asp = 2
-asn = -1.5
-ausp = 1.5
+asn =  -1.5
+ausp =  1.5
 
 dfn = 0
 dsp = 0
@@ -19,9 +19,9 @@ dsn = -1.5
 dusp = -1.5
 
 # Initial conditions
-u0 = [0 0 0]
+u0 = [-1.9 -1.8 -1.8]
 
-Tfinal= 3000.0
+Tfinal= 10000.0
 tspan=(0.0,Tfinal)
 
 Iapp = -2.
@@ -38,4 +38,6 @@ sol = solve(prob,dtmax=0.1)
 ## Generation of figures 
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
+plot!(sol.t,sol[2,:])
+plot!(sol.t,sol[3,:])
 ylabel!("V")
