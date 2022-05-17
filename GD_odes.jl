@@ -220,8 +220,19 @@ function CBM_observer!(du,u,p,t)
     ϕ̂ = 1/C*[-mCaLh * (V-VCa) ...
             -mCaTh * hCaTh * (V-VCa)];
 
+    bh = (1/C) * (-gNa*mNah*hNah*(V-VNa) +
+    # Potassium Currents
+    -gKd*mKdh*(V-VK) -gAf*mAfh*hAfh*(V-VK) -gAs*mAsh*hAsh*(V-VK) +
+    -gKCa*mKCainf(Cah)*(V-VK) +
+    # Cation current
+    -gH*mHh*(V-VH) +
+    # Passive currents
+    -gl*(V-Vl) +
+    # Stimulation currents
+    +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
+
     # dV^
-    du[14] = dot(ϕ̂,θ̂) + b + γ*(1+Ψ'*P*Ψ)*(V-Vh)
+    du[14] = dot(ϕ̂,θ̂) + bh + γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     # Internal dynamics
     du[15] = (1/tau_mNa(V)) * (mNainf(V) - mNah)
@@ -557,7 +568,7 @@ function CBM_2D_observer!(du,u,p,t)
     Ca=u[13] # Intracellular calcium concentration
     
     # Hardcoded input current
-    uin = 4 # .+ 0.2*sin.(0.01*t)+0.2*sin.(0.05*t)
+    uin = 4 .+ 2*sin.(0.01*t) .+ 2*sin(t)
 
     θ = [gCaL gCaT]
     ϕ = 1/C*[-mCaL*(V-VCa) ...
