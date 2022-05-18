@@ -19,7 +19,12 @@ dsn = -1.5
 dusp = -1.5
 
 # Initial conditions
-u0 = [-1.9 -1.8 -1.8]
+x0 = [-1.9 -1.8 -1.8]
+xh0 = [-1 -1 -1]
+θ̂₀ = .1;
+P₀ = 1;
+Ψ₀ = 0;
+u0 = [x0 xh0 θ̂₀ P₀ Ψ₀]
 
 Tfinal= 10000.0
 tspan=(0.0,Tfinal)
@@ -31,7 +36,7 @@ p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(LR_ODE!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(LR_observer!,u0,tspan,p) # Simulation without noise (ODE)
 sol = solve(prob,dtmax=0.1)
 
 
