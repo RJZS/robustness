@@ -1,5 +1,7 @@
 using Plots
 using DifferentialEquations, LinearAlgebra
+using Random, Distributions
+Random.seed!(123)
 
 include("GD_odes.jl")
 
@@ -28,12 +30,13 @@ gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α = 0.008
-γ = 2
+γ = 5
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
-err = 0.05 # Maximum proportional error in r.
-half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
+err = 0.0 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+# half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
+half_acts = (45*(1+err),60*(1+err),85*(1+err))
 
 # Initial conditions
 x₀ = init_neur(-70.);
@@ -43,12 +46,34 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 30000.0 # 4000.0
+Tfinal= 2000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
 # Constant current
-Iapp=4. # Overwritten in the function by a hardcoded input.
+#Iapp= 4. # Overwritten in the function by a hardcoded input.
+
+# Noise-generated current
+d = Normal(0,0)
+n_per_t = 5
+n = rand(d, Int(Tfinal*n_per_t)+2)
+# Iapp = t -> -1 - 0*t 
+
+# Interpolated noisy input for ODE solver
+function noisy_input(Iconst, noise, n_per_t, t)
+    dt = 1/n_per_t
+    y0j = Int.(floor.(t.*n_per_t)).+1
+    y0 = Iconst .+ noise[y0j]
+    y1 = Iconst .+ noise[y0j.+1]
+    t0 = t .- t.%dt
+    t1 = t0 .+ dt
+
+    y = y0 .+ (t .- t0).*(y1.-y0)./(t1-t0)
+end
+# nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
+
+Iconst = -1
+Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -68,10 +93,11 @@ p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
-# sol = solve(prob,dtmax=0.1)
+#prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_ODE,u0,tspan,p) # Simulation without noise (ODE)
+sol = solve(prob,dtmax=0.1)
 # sol = solve(prob,alg_hints=[:stiff],reltol=1e-8,abstol=1e-8)
-sol = solve(prob,AutoTsit5(Rosenbrock23()))
+# sol = solve(prob,AutoTsit5(Rosenbrock23()))
 # using LSODA
 # sol = solve(prob,lsoda(),reltol=1e-10,abstol=1e-10)
 
@@ -97,6 +123,7 @@ p4 = plot(sol.t,sol[28,:]) # gCaT
 j = size(sol)[3]
 i = round(Int,4*j/5)
 p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
+plot!(sol.t[i:j],sol[14,i:j])
 ylabel!("V")
 
 p2t = plot(sol.t[i:j], sol[13,i:j])
@@ -105,3 +132,5 @@ plot!(sol.t[i:j], sol[26,i:j])
 # Parameter estimates
 p3t = plot(sol.t[i:j],sol[27,i:j]) # gCaL
 p4t = plot(sol.t[i:j],sol[28,i:j]) # gCaT
+
+p1
