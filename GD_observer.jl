@@ -46,7 +46,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 2000.0 # 14500.0
+Tfinal= 20000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -54,7 +54,7 @@ tspan=(0.0,Tfinal)
 #Iapp= 4. # Overwritten in the function by a hardcoded input.
 
 # Noise-generated current
-d = Normal(0,0)
+d = Normal(0,1)
 n_per_t = 5
 n = rand(d, Int(Tfinal*n_per_t)+2)
 # Iapp = t -> -1 - 0*t 
@@ -72,7 +72,7 @@ function noisy_input(Iconst, noise, n_per_t, t)
 end
 # nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
 
-Iconst = -1
+Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 
 # Current pulses
