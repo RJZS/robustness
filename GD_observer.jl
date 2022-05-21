@@ -34,9 +34,26 @@ gH=0.; # H-current maximal conductance
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
+# The gates are 
+# (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
+# mCaL, mCaT, hCaT, mH). The true values are
+# (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
 err = 0.0 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
-half_acts = (45*(1+err),60*(1+err),85*(1+err))
+half_acts = (25*(1+err),40*(1+err),15*(1-err),
+80*(1+err),60*(1-err),60*(1-err),
+20*(1+err),
+45*(1+err),60*(1-err),85*(1+err),85*(1+err),-30*(1-err))
+# TODO: Try random error. Try error in other params.
+
+# Errors in tau half act
+# mNa 100 hNa 50 mKd 30
+# mAf 100 hAf 100 mAs hAs 100 mCaL mCaT hCaT 30
+# mH 30
+err_t = 0.1
+half_act_taus = (100*(1+err_t),50*(1-err_t),30*(1-err_t),
+            100*(1-err_t),100*(1+err_t),100*(1+err_t),100*(1+err_t),
+            30*(1+err_t),30*(1+err_t),30*(1-err_t),30*(1+err_t))
 
 # Initial conditions
 x₀ = init_neur(-70.);
@@ -46,7 +63,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 20000.0 # 14500.0
+Tfinal= 7500.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -74,6 +91,7 @@ end
 
 Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
+# Iapp = t -> 4.
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -89,12 +107,14 @@ tf2=370 # Ending time of first pulse
 
 ## Current-clamp experiment
 # Parameter vector for simulations
-p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts)
+p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,
+gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
 
 # Simulation
 # Using the calcium observer
-#prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
-prob = ODEProblem(CBM_ODE,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
+# prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
+
 sol = solve(prob,dtmax=0.1)
 # sol = solve(prob,alg_hints=[:stiff],reltol=1e-8,abstol=1e-8)
 # sol = solve(prob,AutoTsit5(Rosenbrock23()))
@@ -108,6 +128,9 @@ sol = solve(prob,dtmax=0.1)
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
+
+p1b = plot(sol.t,sol[1,:])
+plot!(sol.t, sol[14,:])
 
 # Ca versus its estimate
 # i = 220000
@@ -133,4 +156,4 @@ plot!(sol.t[i:j], sol[26,i:j])
 p3t = plot(sol.t[i:j],sol[27,i:j]) # gCaL
 p4t = plot(sol.t[i:j],sol[28,i:j]) # gCaT
 
-p1
+p1b
