@@ -18,6 +18,9 @@ dsp = 0
 dsn = -1.5
 dusp = -1.5
 
+# delta_ests = (0, 0, -1.5, -1.5)
+delta_ests = (.4, -.3, -1.2, -1.9)
+
 # Initial conditions
 x0 = [-1.9 -1.8 -1.8]
 xh0 = [-1 -1 -1]
@@ -26,13 +29,16 @@ P₀ = 1;
 Ψ₀ = 0;
 u0 = [x0 xh0 θ̂₀ P₀ Ψ₀]
 
-Tfinal= 10000.0
+Tfinal= 16000.0
 tspan=(0.0,Tfinal)
+
+γ = 2
+α = 0.01 # 0.0004
 
 Iapp = -2.
 
 # Parameter vector for simulations
-p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp)
+p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp,delta_ests)
 
 # Simulation
 # Using the calcium observer
@@ -46,3 +52,5 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 plot!(sol.t,sol[2,:])
 plot!(sol.t,sol[3,:])
 ylabel!("V")
+
+p2 = plot(sol.t,sol[7,:])

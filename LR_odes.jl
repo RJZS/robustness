@@ -61,7 +61,7 @@ function LR_observer!(du,u,p,t)
     tau_us = p[10]
     # Input
     Iapp = p[11]
-    deltas = p[12] # Estimated deltas (for uncertain model)
+    delta_ests = p[12] # Estimated deltas (for uncertain model)
     
     # Variables
     V = u[1]
@@ -85,10 +85,10 @@ function LR_observer!(du,u,p,t)
     P = u[8]
     Ψ = u[9]
 
-    ϕ̂ = -element(Vush,1,dusp)
+    ϕ̂ = -element(Vush,1,delta_ests[4])
 
-    du[4] = dot(ϕ̂,θ̂) -V  -element(V,afn,dfn) -element(Vsh,asp,dsp) +
-                -element(Vsh,asn,dsn) + Iapp +
+    du[4] = dot(ϕ̂,θ̂) -V  -element(V,afn,delta_ests[1]) -element(Vsh,asp,delta_ests[2]) +
+                -element(Vsh,asn,delta_ests[3]) + Iapp +
                 γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[5] = (1/tau_s) * (V - Vsh)
