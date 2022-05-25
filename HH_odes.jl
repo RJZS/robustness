@@ -70,7 +70,7 @@ function HH_ode!(dz,z,p,t)
     dz[:] = [dv,dm,dh,dn]
 end
 
-function HH_observer!(dz,z,p,t)
+function HH_observer_orig!(dz,z,p,t)
     Iapp =          p[1]
     c =             p[2]
     (gNa,gK,gL) =   p[3]
@@ -206,4 +206,67 @@ function HH_s_observer!(dz,z,p,t)
     dP = (dP+dP')/2;
 
     dz[:] = [dv;dm;dh;dn;dv̂;dm̂;dĥ;dn̂;dθ̂;dP[:];dΨ;ds;ds_hat]';
+end
+
+function HH_observer!(dz,z,p,t)
+    Iapp =          p[1]
+    c =             p[2]
+    (gNa,gK,gL) =   p[3]
+    (ENa,EK,EL) =   p[4]
+    (α,γ) =         p[5]
+    (rm, rh, rn) =  p[6]
+
+    # True system
+    v = z[1]
+    m = z[2]
+    h = z[3]
+    n = z[4]
+
+    (τm,σm) = gating_m(v);
+    (τh,σh) = gating_h(v);
+    (τn,σn) = gating_n(v);
+
+    θ = 1/c*[gNa gK gL gNa*ENa gK*EK gL*EL 1]
+    ϕ = [-m^3*h*v ...
+         -n^4*v ... 
+         -v ...
+         m^3*h ...
+         n^4 ...
+         1 ...
+         Iapp(t)];
+
+    dv = dot(ϕ,θ)
+    dm = 1/τm*(-m + σm);
+    dh = 1/τh*(-h + σh);
+    dn = 1/τn*(-n + σn);
+
+    # Adaptive observer
+    v̂ = z[5]
+    m̂ = z[6]
+    ĥ = z[7]
+    n̂ = z[8]
+    θ̂ = z[9:11]
+    P = reshape(z[11+1:11+9],3,3);    
+    P = (P+P')/2
+    Ψ = z[11+9+1:11+9+3]
+
+    (τm̂,σm̂) = gating_m(v, rm);
+    (τĥ,σĥ) = gating_h(v, rh);
+    (τn̂,σn̂) = gating_n(v, rn);
+
+    ϕ̂ =   (1/c)*[-m̂^3*ĥ*(v-ENa) ...
+                -n̂^4*(v-EK) ... 
+                -(v-EL)];
+
+    dv̂ = dot(ϕ̂,θ̂) + Iapp(t) + γ*(1+Ψ'*P*Ψ)*(v-v̂)
+    dm̂ = 1/τm̂*(-m̂ + σm̂);
+    dĥ = 1/τĥ*(-ĥ + σĥ);
+    dn̂ = 1/τn̂*(-n̂ + σn̂);
+
+    dθ̂ = γ*P*Ψ*(v-v̂);
+    dΨ = -γ*Ψ + ϕ̂; 
+    dP = α*P - ((P*Ψ)*(P*Ψ)');
+    dP = (dP+dP')/2;
+
+    dz[:] = [dv;dm;dh;dn;dv̂;dm̂;dĥ;dn̂;dθ̂;dP[:];dΨ]';
 end

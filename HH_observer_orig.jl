@@ -1,6 +1,5 @@
 using Plots: print
 using DifferentialEquations, Random, Distributions, Plots, LinearAlgebra, DelimitedFiles
-# Random.seed!(121)
 
 # Flag for saving data to .txt files 
 save_data = false
@@ -19,56 +18,33 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 
 # Modelling errors
 # True values are: r_m = -40, r_h = -62, r_n = -53
-err = 0.05 # Maximum proportional error in r.
+err = 0.04 # Maximum proportional error in r.
 half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
-
-Tfinal = 200.
-
-# Noise-generated current
-d = Normal(0,2)
-n_per_t = 8
-n = rand(d, Int(Tfinal*n_per_t)+2)
-# Iapp = t -> -1 - 0*t 
-
-# Interpolated noisy input for ODE solver
-function noisy_input(Iconst, noise, n_per_t, t)
-    dt = 1/n_per_t
-    y0j = Int.(floor.(t.*n_per_t)).+1
-    y0 = Iconst .+ noise[y0j]
-    y1 = Iconst .+ noise[y0j.+1]
-    t0 = t .- t.%dt
-    t1 = t0 .+ dt
-
-    y = y0 .+ (t .- t0).*(y1.-y0)./(t1-t0)
-end
-# nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
-
-Iconst = 2
-Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 
 # Initial conditions
 x₀ = [0 0 0 0]; 
 x̂₀ = [-60 0.5 0.5 0.5];
-θ̂₀ = [60 60 10];
-P₀ = Matrix(I, 3, 3);
-Ψ₀ = [0 0 0];
+θ̂₀ = [60 60 10 0 0 0 0];
+P₀ = Matrix(I, 7, 7);
+Ψ₀ = [0 0 0 0 0 0 0];
 
 # Integration initial conditions and parameters
 dt = 0.01
+Tfinal = 200. # 100.
 tspan = (0.,Tfinal)
-z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,9) Ψ₀]
+z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,49) Ψ₀]
 p = (Iapp,c,g,E,(α,γ),half_acts)
 
 # Integrate
-prob = ODEProblem(HH_observer!,z₀,tspan,p)
+prob = ODEProblem(HH_observer_orig!,z₀,tspan,p)
 sol = solve(prob,Tsit5(),reltol=1e-8,abstol=1e-8,saveat=0.1,maxiters=1e6)
 t = sol.t
 v = sol[1,1,:];
 w = sol[1,2:4,:];
 v̂ = sol[1,5,:];
 ŵ = sol[1,6:8,:];
-θ̂ = sol[1,9:11,:];
-N = 15+9+3;
+θ̂ = sol[1,9:15,:];
+N = 15+49+7;
 
 if save_data
     writedlm("./../data/HH_voltages.txt",  hcat(t,v,v̂), " ")
@@ -94,4 +70,18 @@ plt2 = plot!(t[pltstartidx:end],θ̂[2,pltstartidx:end],linecolor="red")
 plt3 = plot([pltstart,Tfinal],[g[3]/c,g[3]/c],linecolor="black",linestyle=:dash,labels="gL/c")
 plt3 = plot!(t[pltstartidx:end],θ̂[3,pltstartidx:end],linecolor="red")
 
-plt0
+# gNa*ENa/c
+plt4 = plot([pltstart,Tfinal],[g[1]*E[1]/c,g[1]*E[1]/c],linecolor="black",linestyle=:dash,labels="gNa*ENa/c")
+plt4 = plot!(t[pltstartidx:end],θ̂[4,pltstartidx:end],linecolor="red")
+
+# gK*EK/c
+plt5 = plot([pltstart,Tfinal],[g[2]*E[2]/c,g[2]*E[2]/c],linecolor="black",linestyle=:dash,labels="gK*EK/c")
+plt5 = plot!(t[pltstartidx:end],θ̂[5,pltstartidx:end],linecolor="red")
+
+# gL*EL/c
+plt6 = plot([pltstart,Tfinal],[g[3]*E[3]/c,g[3]*E[3]/c],linecolor="black",linestyle=:dash,labels="gL*EL/c")
+plt6 = plot!(t[pltstartidx:end],θ̂[6,pltstartidx:end],linecolor="red")
+
+# 1/c
+plt7 = plot([pltstart,Tfinal],[1/c,1/c],linecolor="black",linestyle=:dash,labels="1/c")
+plt7 = plot!(t[pltstartidx:end],θ̂[7,pltstartidx:end],linecolor="red")
