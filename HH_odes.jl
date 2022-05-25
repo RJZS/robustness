@@ -215,6 +215,7 @@ function HH_observer!(dz,z,p,t)
     (ENa,EK,EL) =   p[4]
     (α,γ) =         p[5]
     (rm, rh, rn) =  p[6]
+    sensor_noise =  p[7]
 
     # True system
     v = z[1]
@@ -250,20 +251,23 @@ function HH_observer!(dz,z,p,t)
     P = (P+P')/2
     Ψ = z[11+9+1:11+9+3]
 
-    (τm̂,σm̂) = gating_m(v, rm);
-    (τĥ,σĥ) = gating_h(v, rh);
-    (τn̂,σn̂) = gating_n(v, rn);
+    # Add measurement noise
+    nv = v + sensor_noise(t)
 
-    ϕ̂ =   (1/c)*[-m̂^3*ĥ*(v-ENa) ...
-                -n̂^4*(v-EK) ... 
-                -(v-EL)];
+    (τm̂,σm̂) = gating_m(nv, rm);
+    (τĥ,σĥ) = gating_h(nv, rh);
+    (τn̂,σn̂) = gating_n(nv, rn);
 
-    dv̂ = dot(ϕ̂,θ̂) + Iapp(t) + γ*(1+Ψ'*P*Ψ)*(v-v̂)
+    ϕ̂ =   (1/c)*[-m̂^3*ĥ*(nv-ENa) ...
+                -n̂^4*(nv-EK) ... 
+                -(nv-EL)];
+
+    dv̂ = dot(ϕ̂,θ̂) + Iapp(t) + γ*(1+Ψ'*P*Ψ)*(nv-v̂)
     dm̂ = 1/τm̂*(-m̂ + σm̂);
     dĥ = 1/τĥ*(-ĥ + σĥ);
     dn̂ = 1/τn̂*(-n̂ + σn̂);
 
-    dθ̂ = γ*P*Ψ*(v-v̂);
+    dθ̂ = γ*P*Ψ*(nv-v̂);
     dΨ = -γ*Ψ + ϕ̂; 
     dP = α*P - ((P*Ψ)*(P*Ψ)');
     dP = (dP+dP')/2;

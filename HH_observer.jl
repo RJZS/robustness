@@ -15,14 +15,14 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 
 # Observer parameters
 α = 0.5
-γ = 5.0
+γ = 2.0
 
 # Modelling errors
 # True values are: r_m = -40, r_h = -62, r_n = -53
-err = 0.05 # Maximum proportional error in r.
+err = 0.1 # Maximum proportional error in r.
 half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
 
-Tfinal = 200.
+Tfinal = 100.
 
 # Noise-generated current
 d = Normal(0,2)
@@ -46,6 +46,12 @@ end
 Iconst = 2
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 
+# Noise on measurements of v
+sd = Normal(0, 20)
+sn_per_t = 100
+sn = rand(sd, Int(Tfinal*sn_per_t)+2)
+sensor_noise = t -> noisy_input(0, sn, sn_per_t, t)
+
 # Initial conditions
 x₀ = [0 0 0 0]; 
 x̂₀ = [-60 0.5 0.5 0.5];
@@ -57,7 +63,7 @@ P₀ = Matrix(I, 3, 3);
 dt = 0.01
 tspan = (0.,Tfinal)
 z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,9) Ψ₀]
-p = (Iapp,c,g,E,(α,γ),half_acts)
+p = (Iapp,c,g,E,(α,γ),half_acts,sensor_noise)
 
 # Integrate
 prob = ODEProblem(HH_observer!,z₀,tspan,p)
@@ -76,7 +82,7 @@ if save_data
 end
 
 ## Plots
-pltstart = 100
+pltstart = 1
 pltstartidx = 1+pltstart*10
 
 plt0 = plot(t,v)
