@@ -369,22 +369,22 @@ function CBM_v_observer!(du,u,p,t)
     # println(relu(θ̂))
 
     # Internal dynamics
-    du[15] = (1/tau_mNa(V,ha_ts[1])) * (mNainf(V,half_acts[1],-3) - mNah)
-    du[16] = (1/tau_hNa(V,ha_ts[2])) * (hNainf(V,half_acts[2],6) - hNah)
+    du[15] = (1/tau_mNa(V,ha_ts[1])) * (mNainf(V,half_acts[1]) - mNah)
+    du[16] = (1/tau_hNa(V,ha_ts[2])) * (hNainf(V,half_acts[2]) - hNah)
     du[17] = (1/tau_mKd(V,ha_ts[3])) * (mKdinf(V,half_acts[3]) - mKdh)
     du[18] = (1/tau_mAf(V,ha_ts[4])) * (mAfinf(V,half_acts[4]) - mAfh)
     du[19] = (1/tau_hAf(V,ha_ts[5])) * (hAfinf(V,half_acts[5]) - hAfh)
     du[20] = (1/tau_mAs(V,ha_ts[6])) * (mAsinf(V,half_acts[6]) - mAsh)
     du[21] = (1/tau_hAs(V,ha_ts[7])) * (hAsinf(V,half_acts[7]) - hAsh)
-    du[22] = (1/tau_mCaL(V,ha_ts[8])) * (mCaLinf(V,half_acts[8],-9) - mCaLh)
-    du[23] = (1/tau_mCaT(V,ha_ts[9])) * (mCaTinf(V,half_acts[9],-2) - mCaTh)
-    du[24] = (1/tau_hCaT(V,ha_ts[10])) * (hCaTinf(V,half_acts[10],4) - hCaTh)
+    du[22] = (1/tau_mCaL(V,ha_ts[8])) * (mCaLinf(V,half_acts[8]) - mCaLh)
+    du[23] = (1/tau_mCaT(V,ha_ts[9])) * (mCaTinf(V,half_acts[9]) - mCaTh)
+    du[24] = (1/tau_hCaT(V,ha_ts[10])) * (hCaTinf(V,half_acts[10]) - hCaTh)
     du[25] = (1/tau_mH(V,ha_ts[11])) * (mHinf(V,half_acts[11]) - mHh)
-    du[26] = (1/tau_Ca) * ((-(αCa*1.2)*θ̂[4]*mCaLh*(V-VCa))+(-(β*0.7)*θ̂[5]*mCaTh*hCaTh*(V-VCa)) - Cah) 
+    du[26] = (1/tau_Ca) * ((-(αCa)*θ̂[4]*mCaLh*(V-VCa))+(-(β)*θ̂[5]*mCaTh*hCaTh*(V-VCa)) - Cah) 
 
     du[27:31]= γ*P*Ψ*(V-Vh); # dθ̂ 
     du[31+25+1:31+25+5] = -γ*Ψ + ϕ̂;  # dΨ
-    dP = α*P - ((P*Ψ)*(P*Ψ)');
+    dP = α*P - γ*((P*Ψ)*(P*Ψ)');
     dP = (dP+dP')/2;
     du[31+1:31+25] = dP[:]
 end

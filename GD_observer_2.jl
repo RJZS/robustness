@@ -1,7 +1,7 @@
 using Plots
 using DifferentialEquations, LinearAlgebra
 using Random, Distributions
-Random.seed!(123)
+# Random.seed!(123)
 
 include("GD_odes_2.jl")
 
@@ -30,7 +30,7 @@ gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α = 0.008
-γ = 5
+γ = 2
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -38,7 +38,7 @@ gH=0.; # H-current maximal conductance
 # (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
 # mCaL, mCaT, hCaT, mH). The true values are
 # (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0.4 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+err = 0.1 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 half_acts = (x_sample(25,err),40*(1+err),15*(1-err),
 80*(1+err),60*(1-err),60*(1-err),
@@ -50,7 +50,7 @@ x_sample(20,err),
 # mNa 100 hNa 50 mKd 30
 # mAf 100 hAf 100 mAs hAs 100 mCaL mCaT hCaT 30
 # mH 30
-err_t = 0.4
+err_t = 0.
 half_act_taus = (100*(1+err_t),50*(1-err_t),30*(1-err_t),
             100*(1-err_t),100*(1+err_t),100*(1+err_t),100*(1+err_t),
             30*(1+err_t),30*(1+err_t),30*(1-err_t),30*(1+err_t))
@@ -63,7 +63,7 @@ P₀ = Matrix(I, 5, 5);
 Ψ₀ = [0 0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,25) Ψ₀]
 
-Tfinal= 15000.0 # 14500.0
+Tfinal= 4000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
