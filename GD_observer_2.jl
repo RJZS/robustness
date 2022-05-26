@@ -1,4 +1,4 @@
-using Plots
+using Plots, JLD
 using DifferentialEquations, LinearAlgebra
 using Random, Distributions
 # Random.seed!(123)
@@ -91,7 +91,7 @@ end
 
 Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
-# Iapp = t -> 4.
+save("data.jld","noise",n,"n_per_t",n_per_t)
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -127,6 +127,7 @@ sol = solve(prob,dtmax=0.1)
 # sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
 
 ## Generation of figures 
+plotly()
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
@@ -140,9 +141,23 @@ plot!(sol.t, sol[14,:])
 p2 = plot(sol.t, sol[13,:])
 plot!(sol.t, sol[26,:])
 
-# Parameter estimates
+# Parameter estimates...
 p3 = plot(sol.t,sol[27,:]) # gNa
 p4 = plot(sol.t,sol[28,:]) # gKd
+p5 = plot(sol.t,sol[29,:]) # gKCa
+p6 = plot(sol.t,sol[30,:]) # gL
+p7 = plot(sol.t,sol[31,:]) # gT
+
+p8 = plot(sol.t,sol[27,:])
+plot!(sol.t,sol[28,:])
+plot!(sol.t,sol[29,:])
+plot!(sol.t,sol[30,:])
+plot!(sol.t,sol[31,:])
+
+# ...and with bursts superimposed
+nvh = sol[14,:]/mean(sol[14,:]) # 'Normalised v hat'
+p3wb = plot(sol.t, sol[27,:])
+plot!(sol.t, nvh)
 
 # Truncated figures
 j = size(sol)[3]
