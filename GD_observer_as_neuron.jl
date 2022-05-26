@@ -1,7 +1,7 @@
-using Plots, JLD
+using Plots
 using DifferentialEquations, LinearAlgebra
 using Random, Distributions
-# Random.seed!(123)
+Random.seed!(123)
 
 include("GD_odes.jl")
 
@@ -19,49 +19,18 @@ const C=0.1; # Membrane capacitance
 β=0.04 # Calcium dynamics (T-current)
 
 gl=0.3; # Leak current maximal conductance
+
 gNa=100.; # Sodium current maximal conductance
 gKd=65.; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
 gKCa=8.; # Calcium-activated potassium current maximal conductance
-gCaL=4.; # L-type calcium current maximal conductance
-gCaT=0.5; # T-type calcium current maximal conductance
+gCaL=0.6; # L-type calcium current maximal conductance
+gCaT=125; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
-# Observer parameters
-α = 0.008
-γ = 0.01
-
-# Modelling errors
-# True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
-# The gates are 
-# (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
-# mCaL, mCaT, hCaT, mH). The true values are
-# (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0.4 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
-# half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
-half_acts = (25*(1+err),40*(1+err),15*(1-err),
-80*(1+err),60*(1-err),60*(1-err),
-20*(1+err),
-45*(1+err),60*(1-err),85*(1+err),85*(1+err),-30*(1-err))
-# TODO: Try random error. Try error in other params.
-
-# Errors in tau half act
-# mNa 100 hNa 50 mKd 30
-# mAf 100 hAf 100 mAs hAs 100 mCaL mCaT hCaT 30
-# mH 30
-err_t = 0.4
-half_act_taus = (100*(1+err_t),50*(1-err_t),30*(1-err_t),
-            100*(1-err_t),100*(1+err_t),100*(1+err_t),100*(1+err_t),
-            30*(1+err_t),30*(1+err_t),30*(1-err_t),30*(1+err_t))
-
 # Initial conditions
-x₀ = init_neur(-70.);
-x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
-θ̂₀ = [.1 .1];
-P₀ = Matrix(I, 2, 2);
-Ψ₀ = [0 0 0 0]; # Flattened
-u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
+u0 = init_neur(-70.);
 
 Tfinal= 7500.0 # 14500.0
 tspan=(0.0,Tfinal)
@@ -71,12 +40,6 @@ tspan=(0.0,Tfinal)
 #Iapp= 4. # Overwritten in the function by a hardcoded input.
 
 # Noise-generated current
-d = Normal(0,1)
-n_per_t = 5
-n = rand(d, Int(Tfinal*n_per_t)+2)
-# Iapp = t -> -1 - 0*t 
-
-# Interpolated noisy input for ODE solver
 function noisy_input(Iconst, noise, n_per_t, t)
     dt = 1/n_per_t
     y0j = Int.(floor.(t.*n_per_t)).+1
@@ -90,8 +53,9 @@ end
 # nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
 
 Iconst = -1.5
+n = load("data.jld")["noise"]
+n_per_t = load("data.jld")["n_per_t"]
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
-save("data.jld","noise",n,"n_per_t",n_per_t)
 # Iapp = t -> 4.
 
 # Current pulses
@@ -113,8 +77,8 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
-# NOTE the above function is currently not using Ca, it's using Cah!!
+prob = ODEProblem(CBM_ODE,u0,tspan,p) # Simulation without noise (ODE)
+# Note the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
 
@@ -133,30 +97,18 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 p1b = plot(sol.t,sol[1,:])
-plot!(sol.t, sol[14,:])
 
 # Ca versus its estimate
 # i = 220000
 # j = lastindex(sol[1,:])
 p2 = plot(sol.t, sol[13,:])
-plot!(sol.t, sol[26,:])
 
-# Parameter estimates
-p3 = plot(sol.t,sol[27,:]) # gCaL
-p4 = plot(sol.t,sol[28,:]) # gCaT
 
 # Truncated figures
 j = size(sol)[3]
 i = round(Int,3*j/5)
 p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
-plot!(sol.t[i:j],sol[14,i:j])
 ylabel!("V")
 
 p2t = plot(sol.t[i:j], sol[13,i:j])
-plot!(sol.t[i:j], sol[26,i:j])
-
-# Parameter estimates
-p3t = plot(sol.t[i:j],sol[27,i:j]) # gCaL
-p4t = plot(sol.t[i:j],sol[28,i:j]) # gCaT
-
-p1b
+p1
