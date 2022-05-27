@@ -424,9 +424,6 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
     hCaT=u[11] # T-type calcium current inactivation
     mH=u[12] # H current activation
     Ca=u[13] # Intracellular calcium concentration
-    
-    # Hardcoded input current
-    uin = 4 # .+ 0.2*sin.(0.01*t)+0.2*sin.(0.05*t)
 
     θ = [gCaL gCaT]
     ϕ = 1/C*[-mCaL*(V-VCa) ...
@@ -443,7 +440,7 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
                 -gl*(V-Vl) +
                 # Stimulation currents
                 # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-                + uin)
+                + Iapp(t))
     du[1] = dot(ϕ,θ) + b
 
     # Internal dynamics
@@ -474,11 +471,11 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
     hCaTh=u[24] # T-type calcium current inactivation
     mHh=u[25] # H current activation
     Cah=u[26] # Intracellular calcium concentration
-    θ̂= u[27:28]
-    P = reshape(u[28+1:28+4],2,2);    
+    θ̂= u[27:31]
+    P = reshape(u[31+1:31+25],5,5);    
     P = (P+P')/2
-    Ψ_z = u[28+4+1:28+4+2]
-    Ψ_y = u[28+4+3:28+4+4]
+    Ψ_z = u[31+25+1:31+25+5]
+    Ψ_y = u[31+25+6:31+25+7]
 
     ϕ̂_z= 1/C*[-mCaLh * (V-VCa) ...
             -mCaTh * hCaTh * (V-VCa)];
@@ -494,7 +491,7 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
             -gl*(Vh-Vl) +
             # Stimulation currents
             # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-            + uin)
+            + Iapp(t))
 
     # dV^ (part of intrinsic dynamics z).
     du[14] = dot(ϕ̂_z,θ̂) + bh + γ*(Ψ_z'*P*Ψ_y)*(Ca-Cah)
@@ -516,12 +513,12 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
     du[26] = dot(ϕ̂_y,θ̂) - Cah/tau_Ca 
             + γ*(1+Ψ_y'*P*Ψ_y)*(Ca-Cah)
 
-    du[27:28]= γ*P*Ψ_y*(Ca-Cah); # dθ̂ 
-    du[28+4+1:28+4+2] = -Ψ_z + ϕ̂_z;  # dΨ_z
-    du[28+4+3:28+4+4] = -γ*Ψ_y + ϕ̂_y;  # dΨ_y
-    dP = α*P - ((P*Ψ_y)*(P*Ψ_y)');
+    du[27:31]= γ*P*Ψ_y*(Ca-Cah); # dθ̂ 
+    du[31+25+1:31+25+5] = -Ψ_z + ϕ̂_z;  # dΨ_z
+    du[31+25+6:31+25+7] = -γ*Ψ_y + ϕ̂_y;  # dΨ_y
+    dP = α*P - γ*((P*Ψ_y)*(P*Ψ_y)');
     dP = (dP+dP')/2;
-    du[28+1:28+4] = dP[:]
+    du[31+1:31+25] = dP[:]
 end
 
 function relu(x)

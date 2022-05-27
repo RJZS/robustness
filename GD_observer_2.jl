@@ -29,7 +29,7 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α = 0.008
+α = 0.004
 γ = 2
 
 # Modelling errors
@@ -38,7 +38,7 @@ gH=0.; # H-current maximal conductance
 # (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
 # mCaL, mCaT, hCaT, mH). The true values are
 # (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0.1 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+err = 0.001 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 half_acts = (x_sample(25,err),40*(1+err),15*(1-err),
 80*(1+err),60*(1-err),60*(1-err),
@@ -61,9 +61,9 @@ x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
 θ̂₀ = [.1 .1 .1 .1 .1];
 P₀ = Matrix(I, 5, 5);
 Ψ₀ = [0 0 0 0 0]; # Flattened
-u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,25) Ψ₀]
+u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,25) Ψ₀] 
 
-Tfinal= 4000.0 # 14500.0
+Tfinal= 10000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -92,6 +92,8 @@ end
 Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 save("data.jld","noise",n,"n_per_t",n_per_t)
+
+# Iapp = t -> t < 1000 ? -1.5 : 2
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -126,6 +128,18 @@ sol = solve(prob,dtmax=0.1)
 # Alternative from Thiago:
 # sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
 
+# Extract outputs
+V = sol[1,:]
+Ca = sol[13,:]
+Vh = sol[14,:]
+Cah = sol[26,:]
+
+gNah = sol[27,:]
+gKdh = sol[28,:]
+gKCah = sol[29,:]
+gLh = sol[30,:]
+gTh = sol[31,:]
+
 ## Generation of figures 
 plotly()
 # Voltage response
@@ -159,18 +173,18 @@ nvh = sol[14,:]/mean(sol[14,:]) # 'Normalised v hat'
 p3wb = plot(sol.t, sol[27,:])
 plot!(sol.t, nvh)
 
-# Truncated figures
-j = size(sol)[3]
-i = round(Int,3*j/5)
-p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
-plot!(sol.t[i:j],sol[14,i:j])
-ylabel!("V")
+# # Truncated figures
+# j = size(sol)[3]
+# i = round(Int,3*j/5)
+# p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
+# plot!(sol.t[i:j],sol[14,i:j])
+# ylabel!("V")
 
-p2t = plot(sol.t[i:j], sol[13,i:j])
-plot!(sol.t[i:j], sol[26,i:j])
+# p2t = plot(sol.t[i:j], sol[13,i:j])
+# plot!(sol.t[i:j], sol[26,i:j])
 
-# Parameter estimates
-p3t = plot(sol.t[i:j],sol[27,i:j]) # gNa
-p4t = plot(sol.t[i:j],sol[28,i:j]) # gKd
+# # Parameter estimates
+# p3t = plot(sol.t[i:j],sol[27,i:j]) # gNa
+# p4t = plot(sol.t[i:j],sol[28,i:j]) # gKd
 
-p1b
+# p1b

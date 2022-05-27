@@ -30,7 +30,7 @@ gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α = 0.008
-γ = 5
+γ = 2
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -63,7 +63,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 6000.0 # 14500.0
+Tfinal= 9000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -92,7 +92,7 @@ end
 Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 save("data.jld","noise",n,"n_per_t",n_per_t)
-Iapp = t -> 4.
+# Iapp = t -> 4.
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -113,7 +113,7 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_Ca_observer_with_v!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
 # NOTE the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
