@@ -544,9 +544,6 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
     hCaT=u[11] # T-type calcium current inactivation
     mH=u[12] # H current activation
     Ca=u[13] # Intracellular calcium concentration
-    
-    # Hardcoded input current
-    uin = 4 # .+ 0.2*sin.(0.01*t)+0.2*sin.(0.05*t)
 
     θ = [gCaL gCaT]
     ϕ = 1/C*[-mCaL*(V-VCa) ...
@@ -563,7 +560,7 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
                 -gl*(V-Vl) +
                 # Stimulation currents
                 # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-                + uin)
+                + Iapp(t))
     du[1] = dot(ϕ,θ) + b
 
     # Internal dynamics
@@ -607,17 +604,17 @@ function CBM_Ca_observer_with_v!(du,u,p,t)
     bh = (1/C) * (-gNa*mNah*hNah*(V-VNa) +
             # Potassium Currents
             -gKd*mKdh*(V-VK) -gAf*mAfh*hAfh*(V-VK) -gAs*mAsh*hAsh*(V-VK) +
-            -gKCa*mKCainf(Ca)*(Vh-VK) +
+            -gKCa*mKCainf(Ca)*(V-VK) +
             # Cation current
             -gH*mHh*(V-VH) +
             # Passive currents
-            -gl*(Vh-Vl) +
+            -gl*(V-Vl) +
             # Stimulation currents
             # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-            + uin)
+            + Iapp(t))
 
     # dV^ (part of intrinsic dynamics z).
-    du[14] = dot(ϕ̂_z,θ̂) + bh + γ*(Ψ_z'*P*Ψ_y)*(Ca-Cah)
+    du[14] = dot(ϕ̂_z,θ̂) + bh # + γ*(Ψ_z'*P*Ψ_y)*(Ca-Cah)
 
     # Observer's internal dynamics
     du[15] = (1/tau_mNa(V)) * (mNainf(V) - mNah)
