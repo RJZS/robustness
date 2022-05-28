@@ -802,6 +802,8 @@ function CBM_2D_observer!(du,u,p,t)
     gl=p[16] # Leak current maximal conductance
 
     half_acts = p[17] # Estimated half-activations (for uncertain model)
+    half_ts = p[18]
+    α1 = p[19]
 
     # Variables
     V=u[1] # Membrane potential
@@ -874,6 +876,12 @@ function CBM_2D_observer!(du,u,p,t)
     e = [V - Vh; Ca - Cah]
     # Γ = [γ1 0; 0 γ2]
     # Γe = Γ*e
+
+    if t < 5000
+        α = α1
+    else
+        α = 0
+    end
 
     ϕ̂  = zeros(Number, (2,2))
     ϕ̂[1,:] = [-(1/C) * mCaLh * (V-VCa) ...

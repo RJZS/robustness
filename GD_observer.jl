@@ -29,7 +29,7 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α = 0.008
+α1 = 0.008
 γ = 0.5
 
 # Modelling errors
@@ -109,7 +109,7 @@ tf2=370 # Ending time of first pulse
 ## Current-clamp experiment
 # Parameter vector for simulations
 p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,
-gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
+gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus,α1)
 
 # Simulation
 # Using the calcium observer
@@ -118,7 +118,7 @@ prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
 
-sol = solve(prob,dtmax=0.1)
+sol = solve(prob,dtmax=0.1,saveat=0.1)
 # sol = solve(prob,alg_hints=[:stiff],reltol=1e-8,abstol=1e-8)
 # sol = solve(prob,AutoTsit5(Rosenbrock23()))
 # using LSODA
@@ -164,3 +164,7 @@ p3t = plot(t[i:j],gLh[i:j]) # gCaL
 p4t = plot(t[i:j],gTh[i:j]) # gCaT
 
 p1b
+
+println("Means")
+println(mean(gLh[i:j]))
+println(mean(gTh[i:j]))
