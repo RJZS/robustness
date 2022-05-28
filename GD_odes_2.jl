@@ -791,7 +791,7 @@ function CBM_2D_observer!(du,u,p,t)
             + Iapp(t))
 
     # Output Feedback Premultiplier
-    ofp = γ*(I + Ψ'*P*Ψ)
+    ofp = γ*(I + Ψ*P*Ψ')
 
     # dV^ (first output)
     du[14] = dot(ϕ̂[1,:],θ̂) + bh + dot(ofp[1,:],e)
@@ -814,12 +814,12 @@ function CBM_2D_observer!(du,u,p,t)
             + dot(ofp[2,:],e)
 
     # Update observer terms
-    du[27:28]= γ*P*Ψ*e; # dθ̂ 
+    du[27:31]= γ*P*Ψ'*e; # dθ̂ 
     
     dΨ = -γ*Ψ + ϕ̂;
-    du[28+4+1:28+4+4] = dΨ[:]
+    du[31+25+1:31+25+10] = dΨ[:]
 
-    dP = α*P - ((P*Ψ)*(P*Ψ)');
+    dP = α*P - ((P*Ψ')*(P*Ψ')');
     dP = (dP+dP')/2;
-    du[28+1:28+4] = dP[:]
+    du[31+1:31+25] = dP[:]
 end

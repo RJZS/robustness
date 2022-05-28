@@ -819,7 +819,7 @@ function CBM_2D_observer!(du,u,p,t)
     Ca=u[13] # Intracellular calcium concentration
     
     # Hardcoded input current
-    uin = 4 .+ 2*sin.(0.01*t) .+ 2*sin(t)
+    # uin = 4 .+ 2*sin.(0.01*t) .+ 2*sin(t)
 
     θ = [gCaL gCaT]
     ϕ = 1/C*[-mCaL*(V-VCa) ...
@@ -836,7 +836,7 @@ function CBM_2D_observer!(du,u,p,t)
                 -gl*(V-Vl) +
                 # Stimulation currents
                 # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-                + uin)
+                + Iapp(t))
     du[1] = dot(ϕ,θ) + b
 
     # Internal dynamics
@@ -891,38 +891,38 @@ function CBM_2D_observer!(du,u,p,t)
             -gl*(V-Vl) +
             # Stimulation currents
             # +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
-            + uin)
+            + Iapp(t))
 
     # Output Feedback Premultiplier
-    ofp = γ*(I + Ψ'*P*Ψ)
+    ofp = γ*(I + Ψ*P*Ψ')
 
     # dV^ (first output)
     du[14] = dot(ϕ̂[1,:],θ̂) + bh + dot(ofp[1,:],e)
 
     # Observer's internal dynamics
-    du[15] = (1/tau_mNa(V)) * (mNainf(V) - mNah)
-    du[16] = (1/tau_hNa(V)) * (hNainf(V) - hNah)
-    du[17] = (1/tau_mKd(V)) * (mKdinf(V) - mKdh)
-    du[18] = (1/tau_mAf(V)) * (mAfinf(V) - mAfh)
-    du[19] = (1/tau_hAf(V)) * (hAfinf(V) - hAfh)
-    du[20] = (1/tau_mAs(V)) * (mAsinf(V) - mAsh)
-    du[21] = (1/tau_hAs(V)) * (hAsinf(V) - hAsh)
-    du[22] = (1/tau_mCaL(V)) * (mCaLinf(V,half_acts[1]) - mCaLh)
-    du[23] = (1/tau_mCaT(V)) * (mCaTinf(V,half_acts[2]) - mCaTh)
-    du[24] = (1/tau_hCaT(V)) * (hCaTinf(V,half_acts[3]) - hCaTh)
-    du[25] = (1/tau_mH(V)) * (mHinf(V) - mHh)
+    du[15] = (1/tau_mNa(V)) * (mNainf(V,half_acts[1]) - mNah)
+    du[16] = (1/tau_hNa(V)) * (hNainf(V,half_acts[2]) - hNah)
+    du[17] = (1/tau_mKd(V)) * (mKdinf(V,half_acts[3]) - mKdh)
+    du[18] = (1/tau_mAf(V)) * (mAfinf(V,half_acts[4]) - mAfh)
+    du[19] = (1/tau_hAf(V)) * (hAfinf(V,half_acts[5]) - hAfh)
+    du[20] = (1/tau_mAs(V)) * (mAsinf(V,half_acts[6]) - mAsh)
+    du[21] = (1/tau_hAs(V)) * (hAsinf(V,half_acts[7]) - hAsh)
+    du[22] = (1/tau_mCaL(V)) * (mCaLinf(V,half_acts[8]) - mCaLh)
+    du[23] = (1/tau_mCaT(V)) * (mCaTinf(V,half_acts[9]) - mCaTh)
+    du[24] = (1/tau_hCaT(V)) * (hCaTinf(V,half_acts[10]) - hCaTh)
+    du[25] = (1/tau_mH(V)) * (mHinf(V,half_acts[11]) - mHh)
 
     # Ca dynamics (second output)
-    du[26] = dot(ϕ̂[2,:],θ̂) - Cah/tau_Ca 
+    du[26] = dot(ϕ̂[2,:],θ̂) - Ca/tau_Ca 
             + dot(ofp[2,:],e)
 
     # Update observer terms
-    du[27:28]= γ*P*Ψ*e; # dθ̂ 
+    du[27:28]= γ*P*Ψ'*e; # dθ̂ 
     
     dΨ = -γ*Ψ + ϕ̂;
     du[28+4+1:28+4+4] = dΨ[:]
 
-    dP = α*P - ((P*Ψ)*(P*Ψ)');
+    dP = α*P - γ*((P*Ψ')*(P*Ψ')');
     dP = (dP+dP')/2;
     du[28+1:28+4] = dP[:]
 end

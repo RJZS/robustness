@@ -60,10 +60,11 @@ x₀ = init_neur(-70.);
 x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
 θ̂₀ = [.1 .1 .1 .1 .1];
 P₀ = Matrix(I, 5, 5);
-Ψ₀ = [0 0 0 0 0]; # Flattened
+# Ψ₀ = [0 0 0 0 0]; # Flattened
+Ψ₀ = [0 0 0 0 0 0 0 0 0 0]; # Flattened, for 2D observer
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,25) Ψ₀] 
 
-Tfinal= 20000.0 # 14500.0
+Tfinal= 4000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -114,7 +115,7 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus,α1)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_v_observer!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
 # Note the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)

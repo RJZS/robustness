@@ -30,7 +30,7 @@ gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α = 0.008
-γ = 2
+γ = 0.5
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -63,7 +63,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 9000.0 # 14500.0
+Tfinal= 10000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -113,7 +113,7 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_v_observer_with_Ca!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
 # NOTE the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
@@ -126,6 +126,10 @@ sol = solve(prob,dtmax=0.1)
 
 # Alternative from Thiago:
 # sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
+
+# Extract output variables
+t = sol.t; V = sol[1,:]; Vh = sol[14,:]; Ca = sol[13,:]; Cah = sol[26,:]
+gLh = sol[27,:]; gTh = sol[28,:]
 
 ## Generation of figures 
 # Voltage response
@@ -148,15 +152,15 @@ p4 = plot(sol.t,sol[28,:]) # gCaT
 # Truncated figures
 j = size(sol)[3]
 i = round(Int,3*j/5)
-p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
-plot!(sol.t[i:j],sol[14,i:j])
+p1t = plot(t[i:j],V[i:j],legend=false)
+plot!(t[i:j],Vh[i:j])
 ylabel!("V")
 
-p2t = plot(sol.t[i:j], sol[13,i:j])
-plot!(sol.t[i:j], sol[26,i:j])
+p2t = plot(t[i:j], Ca[i:j])
+plot!(t[i:j], Cah[i:j])
 
 # Parameter estimates
-p3t = plot(sol.t[i:j],sol[27,i:j]) # gCaL
-p4t = plot(sol.t[i:j],sol[28,i:j]) # gCaT
+p3t = plot(t[i:j],gLh[i:j]) # gCaL
+p4t = plot(t[i:j],gTh[i:j]) # gCaT
 
 p1b
