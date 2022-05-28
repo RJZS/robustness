@@ -20,19 +20,19 @@ const C=0.1; # Membrane capacitance
 
 gl=0.3; # Leak current maximal conductance
 
-gNa=98.3; # Sodium current maximal conductance
-gKd=63.8; # Delayed-rectifier potassium current maximal conductance
+gNa=96.95; # Sodium current maximal conductance
+gKd=62.749; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
-gKCa=8; # Calcium-activated potassium current maximal conductance
-gCaL=3.9; # L-type calcium current maximal conductance
-gCaT=0.5; # T-type calcium current maximal conductance
+gKCa=8.101; # Calcium-activated potassium current maximal conductance
+gCaL=3.839; # L-type calcium current maximal conductance
+gCaT=0.53277; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Initial conditions
 u0 = init_neur(-70.);
 
-Tfinal= 10000.0 # 14500.0
+Tfinal= 20000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -82,7 +82,7 @@ prob = ODEProblem(CBM_ODE,u0,tspan,p) # Simulation without noise (ODE)
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
 
-sol = solve(prob,dtmax=0.1)
+sol = solve(prob,dtmax=0.1,saveat=0.1)
 # sol = solve(prob,alg_hints=[:stiff],reltol=1e-8,abstol=1e-8)
 # sol = solve(prob,AutoTsit5(Rosenbrock23()))
 # using LSODA
@@ -93,22 +93,27 @@ sol = solve(prob,dtmax=0.1)
 
 ## Generation of figures 
 # Voltage response
-p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
+t = sol.t
+V = sol[1,:]
+Ca_ = sol[13,:] # To distinguish from Ca in the other script.
+p1=plot(sol.t, V,linewidth=1.5,legend=false)
 ylabel!("V")
 
-p1b = plot(sol.t,sol[1,:])
 
 # Ca versus its estimate
 # i = 220000
 # j = lastindex(sol[1,:])
-p2 = plot(sol.t, sol[13,:])
+p2 = plot(sol.t, Ca_[13,:])
 
 
 # Truncated figures
 j = size(sol)[3]
 i = round(Int,3*j/5)
-p1t = plot(sol.t[i:j],sol[1,i:j],legend=false)
+p1t = plot(sol.t[i:j],V[i:j],legend=false)
 ylabel!("V")
 
-p2t = plot(sol.t[i:j], sol[13,i:j])
+p2t = plot(sol.t[i:j], Ca_[i:j])
 p1
+
+p_compare = plot(t,V)
+plot!(t,Vref)

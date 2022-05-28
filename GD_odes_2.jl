@@ -278,6 +278,7 @@ function CBM_v_observer!(du,u,p,t)
     
     half_acts = p[17]
     ha_ts = p[18] # Half_act taus (for observer model error)
+    α1 = p[19] # Alpha during first prat of simulation
 
     # Variables
     V=u[1] # Membrane potential
@@ -343,6 +344,12 @@ function CBM_v_observer!(du,u,p,t)
     P = reshape(u[31+1:31+25],5,5);    
     P = (P+P')/2
     Ψ = u[31+25+1:31+25+5]
+
+    if t < 5000
+        α = α1
+    else
+        α = 0
+    end
 
     ϕ̂ = 1/C*[-mNah*hNah*(V-VNa) ...
             -mKdh*(V-VK) ...
