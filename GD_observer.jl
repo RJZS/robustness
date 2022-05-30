@@ -30,7 +30,7 @@ gH=0.; # H-current maximal conductance
 
 # Observer parameters
 α1 = 0.008
-γ = 0.5
+γ = 0.02
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -38,7 +38,7 @@ gH=0.; # H-current maximal conductance
 # (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
 # mCaL, mCaT, hCaT, mH). The true values are
 # (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0. # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+err = 0.005 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 half_acts = (25*(1+err),40*(1+err),15*(1-err),
 80*(1+err),60*(1-err),60*(1-err),
@@ -63,7 +63,7 @@ P₀ = Matrix(I, 2, 2);
 Ψ₀ = [0 0 0 0]; # Flattened
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
 
-Tfinal= 10000.0 # 14500.0
+Tfinal= 20000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -128,7 +128,7 @@ sol = solve(prob,dtmax=0.1,saveat=0.1)
 # sol = solve(prob,AutoTsit5(Rosenbrock23()),saveat=0.1)#,reltol=1e-8,abstol=1e-8
 
 # Extract output variables
-t = sol.t; V = sol[1,:]; Vh = sol[14,:]; Ca = sol[13,:]; Cah = sol[26,:]
+t = sol.t; Vref = sol[1,:]; Vh = sol[14,:]; Caref = sol[13,:]; Cah = sol[26,:]
 gLh = sol[27,:]; gTh = sol[28,:]
 
 ## Generation of figures 
@@ -152,11 +152,11 @@ p4 = plot(sol.t,sol[28,:]) # gCaT
 # Truncated figures
 j = size(sol)[3]
 i = round(Int,3*j/5)
-p1t = plot(t[i:j],V[i:j],legend=false)
+p1t = plot(t[i:j],Vref[i:j],legend=false)
 plot!(t[i:j],Vh[i:j])
 ylabel!("V")
 
-p2t = plot(t[i:j], Ca[i:j])
+p2t = plot(t[i:j], Caref[i:j])
 plot!(t[i:j], Cah[i:j])
 
 # Parameter estimates

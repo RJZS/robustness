@@ -20,13 +20,13 @@ const C=0.1; # Membrane capacitance
 
 gl=0.3; # Leak current maximal conductance
 
-gNa=96.95; # Sodium current maximal conductance
-gKd=62.749; # Delayed-rectifier potassium current maximal conductance
+gNa=100; # Sodium current maximal conductance
+gKd=65; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
-gKCa=8.101; # Calcium-activated potassium current maximal conductance
-gCaL=3.839; # L-type calcium current maximal conductance
-gCaT=0.53277; # T-type calcium current maximal conductance
+gKCa=8; # Calcium-activated potassium current maximal conductance
+gCaL=3.974435; # L-type calcium current maximal conductance
+gCaT=0.49061; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Initial conditions
