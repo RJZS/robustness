@@ -355,7 +355,7 @@ function CBM_v_observer!(du,u,p,t)
             -mKdh*(V-VK) ...
             -mKCainf(Cah,half_acts[12])*(V-VK) ...
             -mCaLh * (V-VCa) ...
-            -mCaTh * hCaTh * (V-VCa)];
+            -mCaTh * hCaTh * (V-VCa)]
 
     bh = (1/C) * (
     # Potassium Currents
@@ -368,12 +368,7 @@ function CBM_v_observer!(du,u,p,t)
     +Iapp(t) + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
 
     # dV^
-    du[14] = dot(ϕ̂,θ̂) + bh + γ*(1+Ψ'*P*Ψ)*(V-Vh)
-    # println("------")
-    # println(t)
-    # # println(dot(ϕ̂,relu(θ̂)))
-    # println(θ̂)
-    # println(relu(θ̂))
+    du[14] = dot(ϕ̂',θ̂) + bh + γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     # Internal dynamics
     du[15] = (1/tau_mNa(V,ha_ts[1])) * (mNainf(V,half_acts[1]) - mNah)

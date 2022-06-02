@@ -20,17 +20,17 @@ const C=0.1; # Membrane capacitance
 
 gl=0.3; # Leak current maximal conductance
 
-gNa=100; # Sodium current maximal conductance
-gKd=65; # Delayed-rectifier potassium current maximal conductance
+gNa=96.325; # Sodium current maximal conductance
+gKd=62.517; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
-gKCa=8; # Calcium-activated potassium current maximal conductance
-gCaL=3.974435; # L-type calcium current maximal conductance
-gCaT=0.49061; # T-type calcium current maximal conductance
+gKCa=8.1848; # Calcium-activated potassium current maximal conductance
+gCaL=3.8154; # L-type calcium current maximal conductance
+gCaT=0.54045; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Initial conditions
-u0 = init_neur(-70.);
+u0 = init_neur(-60.);
 
 Tfinal= 20000.0 # 14500.0
 tspan=(0.0,Tfinal)
