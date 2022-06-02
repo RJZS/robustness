@@ -10,6 +10,8 @@ include("HH_odes.jl")
 # True Parameters 
 c = 1.
 g = (120.,36.,0.3)
+errg = 0.001
+g2 = (x_sample(120,errg),x_sample(36,errg),x_sample(0.3,errg))
 E = (55.,-77.,-54.4)
 Iapp = t -> 2 + sin(2*pi/10*t)
 
@@ -19,14 +21,14 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 
 # Modelling errors
 # True values are: r_m = -40, r_h = -62, r_n = -53
-err = 0.02 # Maximum proportional error in r.
+err = 0.002 # Maximum proportional error in r.
 half_acts = (-40, -62, -53)
 half_acts2 = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
 
-Tfinal = 300.
+Tfinal = 200.
 
 # Noise-generated current
-d = Normal(0,1.64)
+d = Normal(0,1.62)
 n_per_t = 4
 n = rand(d, Int(Tfinal*n_per_t)+2)
 # Iapp = t -> -1 - 0*t 
@@ -44,37 +46,29 @@ function noisy_input(Iconst, noise, n_per_t, t)
 end
 # nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
 
-Iconst = 1.8
+Iconst = 2
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 # Iapp = t -> 2 + sin(2*pi/10*t)
+Iapp = t -> Iconst
 
 # Initial conditions
-x₀ = [0 0 0 0]; 
-x̂₀ = [-60 0.5 0.5 0.5];
-θ̂₀ = [60 60 10];
-P₀ = Matrix(I, 3, 3);
-Ψ₀ = [0 0 0];
+x₀ = [0 0 0 0];
 
 # Integration initial conditions and parameters
 dt = 0.01
 tspan = (0.,Tfinal)
-z₀ = [x₀ x̂₀ θ̂₀ reshape(P₀,1,9) Ψ₀]
+z₀ = x₀
 p = (Iapp,c,g,E,half_acts)
-p2 = (Iapp,c,g,E,half_acts2)
+p2 = (Iapp,c,g2,E,half_acts2)
 
 # Integrate
-prob = ODEProblem(HH_ode!,z₀,tspan,p)
-sol = solve(prob,Tsit5(),reltol=1e-8,abstol=1e-8,saveat=0.1,maxiters=1e6)
-prob2 = ODEProblem(HH_ode!,z₀,tspan,p2)
-sol2 = solve(prob2,Tsit5(),reltol=1e-8,abstol=1e-8,saveat=0.1,maxiters=1e6)
+prob = SDEProblem(HH_ode!,HH_ode_noise!,z₀,tspan,p)
+sol = solve(prob,EM(),dt=dt)
 
 t = sol.t
 v = sol[1,1,:];
-v2 = sol2[1,1,:];
+# v2 = sol2[1,1,:];
 w = sol[1,2:4,:];
-v̂ = sol[1,5,:];
-ŵ = sol[1,6:8,:];
-θ̂ = sol[1,9:11,:];
 N = 15+9+3;
 
 if save_data
@@ -87,21 +81,8 @@ pltstart = 1
 pltstartidx = 1+pltstart*10
 
 plt0 = plot(t,v)
-plt0 = plot!(t,v̂,linecolor="red",linestyle= :dash)
-
-# gNa/c
-plt1 = plot([pltstart,Tfinal],[g[1],g[1]],linecolor="black",linestyle=:dash,labels="gNa/c")
-plt1 = plot!(t[pltstartidx:end],θ̂[1,pltstartidx:end],linecolor="red")
-
-# gK/c
-plt2 = plot([pltstart,Tfinal],[g[2],g[2]],linecolor="black",linestyle=:dash,labels="gK/c")
-plt2 = plot!(t[pltstartidx:end],θ̂[2,pltstartidx:end],linecolor="red")
-
-# gL/c
-plt3 = plot([pltstart,Tfinal],[g[3],g[3]],linecolor="black",linestyle=:dash,labels="gL/c")
-plt3 = plot!(t[pltstartidx:end],θ̂[3,pltstartidx:end],linecolor="red")
 
 plt0
 
-pltrel = plot(t,v)
-plot!(t,v2)
+# pltrel = plot(t,v)
+# plot!(t,v2)

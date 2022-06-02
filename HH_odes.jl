@@ -69,6 +69,11 @@ function HH_ode!(dz,z,p,t)
     dz[4] = 1/τn*(-n + σn);
 end
 
+function HH_ode_noise!(dz,z,p,t)
+    dz = [2 0 0 0];
+end
+    
+
 function HH_observer_orig!(dz,z,p,t)
     Iapp =          p[1]
     c =             p[2]
