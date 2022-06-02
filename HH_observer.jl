@@ -19,14 +19,14 @@ Iapp = t -> 2 + sin(2*pi/10*t)
 
 # Modelling errors
 # True values are: r_m = -40, r_h = -62, r_n = -53
-err = 0.1 # Maximum proportional error in r.
+err = 0.0# 5 # Maximum proportional error in r.
 half_acts = (x_sample(-40, err),x_sample(-62, err),x_sample(-53, err))
 
-Tfinal = 100.
+Tfinal = 300.
 
 # Noise-generated current
-d = Normal(0,2)
-n_per_t = 8
+d = Normal(0,1.64)
+n_per_t = 4
 n = rand(d, Int(Tfinal*n_per_t)+2)
 # Iapp = t -> -1 - 0*t 
 
@@ -43,7 +43,7 @@ function noisy_input(Iconst, noise, n_per_t, t)
 end
 # nts = noisy_input(4,n,n_per_t,ts) # For LaTeXStrings
 
-Iconst = 2
+Iconst = 1.8
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 
 # Noise on measurements of v
@@ -89,15 +89,15 @@ plt0 = plot(t,v)
 plt0 = plot!(t,v̂,linecolor="red",linestyle= :dash)
 
 # gNa/c
-plt1 = plot([pltstart,Tfinal],[g[1]/c,g[1]/c],linecolor="black",linestyle=:dash,labels="gNa/c")
+plt1 = plot([pltstart,Tfinal],[g[1],g[1]],linecolor="black",linestyle=:dash,labels="gNa/c")
 plt1 = plot!(t[pltstartidx:end],θ̂[1,pltstartidx:end],linecolor="red")
 
 # gK/c
-plt2 = plot([pltstart,Tfinal],[g[2]/c,g[2]/c],linecolor="black",linestyle=:dash,labels="gK/c")
+plt2 = plot([pltstart,Tfinal],[g[2],g[2]],linecolor="black",linestyle=:dash,labels="gK/c")
 plt2 = plot!(t[pltstartidx:end],θ̂[2,pltstartidx:end],linecolor="red")
 
 # gL/c
-plt3 = plot([pltstart,Tfinal],[g[3]/c,g[3]/c],linecolor="black",linestyle=:dash,labels="gL/c")
+plt3 = plot([pltstart,Tfinal],[g[3],g[3]],linecolor="black",linestyle=:dash,labels="gL/c")
 plt3 = plot!(t[pltstartidx:end],θ̂[3,pltstartidx:end],linecolor="red")
 
 plt0

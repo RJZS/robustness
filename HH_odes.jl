@@ -252,7 +252,8 @@ function HH_observer!(dz,z,p,t)
     Ψ = z[11+9+1:11+9+3]
 
     # Add measurement noise
-    nv = v + sensor_noise(t)
+    # nv = v + sensor_noise(t)
+    nv = v
 
     (τm̂,σm̂) = gating_m(nv, rm);
     (τĥ,σĥ) = gating_h(nv, rh);
