@@ -67,3 +67,16 @@ j = size(sol)[3]
 i = round(Int,3*j/5)
 p1t = plot(t[i:j],V[i:j],legend=false)
 ylabel!("V")
+
+# Spiking Simulation
+gKCa=0; gCaL=0; gCaT=0;
+p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,
+gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl)
+Tfinal = 500;
+Iapp = t -> 2
+prob = ODEProblem(CBM_ODE,u0,tspan,p)
+sol = solve(prob,dtmax=0.1,saveat=0.1)
+
+# Extract output variables
+t = sol.t; V = sol[1,:];
+p2 = plot(t,V)
