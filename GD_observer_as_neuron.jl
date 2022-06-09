@@ -20,13 +20,13 @@ const C=0.1; # Membrane capacitance
 
 gl=0.3; # Leak current maximal conductance
 
-gNa=100; # Sodium current maximal conductance
-gKd=65; # Delayed-rectifier potassium current maximal conductance
+gNa=84.699; # Sodium current maximal conductance
+gKd=53.321; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
-gKCa=8; # Calcium-activated potassium current maximal conductance
-gCaL=3.974435; # L-type calcium current maximal conductance
-gCaT=0.49061; # T-type calcium current maximal conductance
+gKCa=7.8843; # Calcium-activated potassium current maximal conductance
+gCaL=3.19176; # L-type calcium current maximal conductance
+gCaT=0.51210; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Initial conditions
@@ -73,11 +73,11 @@ tf2=370 # Ending time of first pulse
 ## Current-clamp experiment
 # Parameter vector for simulations
 p=(Iapp,I1,I2,ti1,tf1,ti2,tf2,
-gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus)
+gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_ODE,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_ODE_test,u0,tspan,p) # Simulation without noise (ODE)
 # Note the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)

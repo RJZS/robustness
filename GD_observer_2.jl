@@ -38,7 +38,7 @@ gH=0.; # H-current maximal conductance
 # (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
 # mCaL, mCaT, hCaT, mH). The true values are
 # (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0.003 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+err = 0.01 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 half_acts = (x_sample(25,err),40*(1+err),15*(1-err),
 80*(1+err),60*(1-err),60*(1-err),
@@ -64,7 +64,7 @@ P₀ = Matrix(I, 5, 5);
 Ψ₀ = [0 0 0 0 0 0 0 0 0 0]; # Flattened, for 2D observer
 u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,25) Ψ₀] 
 
-Tfinal= 4000.0 # 14500.0
+Tfinal= 40000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -72,7 +72,7 @@ tspan=(0.0,Tfinal)
 #Iapp= 4. # Overwritten in the function by a hardcoded input.
 
 # Noise-generated current
-d = Normal(0,1.2)
+d = Normal(0,0.8)
 n_per_t = 5
 n = rand(d, Int(Tfinal*n_per_t)+2)
 # Iapp = t -> -1 - 0*t 
@@ -115,7 +115,7 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus,α1)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_2D_observer!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_v_observer!,u0,tspan,p) # Simulation without noise (ODE)
 # Note the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
