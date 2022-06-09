@@ -49,26 +49,30 @@ function HH_ode!(dz,z,p,t)
     c =             p[2]
     (gNa,gK,gL) =   p[3]
     (ENa,EK,EL) =   p[4]
+    half_acts =     p[5]
 
     v = z[1]
     m = z[2]
     h = z[3]
     n = z[4]
 
-    (τm,σm) = gating_m(v);
-    (τh,σh) = gating_h(v);
-    (τn,σn) = gating_n(v);
+    (τm,σm) = gating_m(v,half_acts[1]);
+    (τh,σh) = gating_h(v,half_acts[2]);
+    (τn,σn) = gating_n(v,half_acts[3]);
 
     g = [gNa; gK; gL];
     phi = [-m^3*h*(v-ENa);-n^4*(v-EK);-(v-EL)];
 
-    dv = 1/c * (dot(phi,g) + Iapp(t));
-    dm = 1/τm*(-m + σm);
-    dh = 1/τh*(-h + σh);
-    dn = 1/τn*(-n + σn);
-
-    dz[:] = [dv,dm,dh,dn]
+    dz[1] = 1/c * (dot(phi,g) + Iapp(t));
+    dz[2] = 1/τm*(-m + σm);
+    dz[3] = 1/τh*(-h + σh);
+    dz[4] = 1/τn*(-n + σn);
 end
+
+function HH_ode_noise!(dz,z,p,t)
+    dz = [2 0 0 0];
+end
+    
 
 function HH_observer_orig!(dz,z,p,t)
     Iapp =          p[1]
@@ -252,7 +256,8 @@ function HH_observer!(dz,z,p,t)
     Ψ = z[11+9+1:11+9+3]
 
     # Add measurement noise
-    nv = v + sensor_noise(t)
+    # nv = v + sensor_noise(t)
+    nv = v
 
     (τm̂,σm̂) = gating_m(nv, rm);
     (τĥ,σĥ) = gating_h(nv, rh);

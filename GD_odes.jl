@@ -81,6 +81,8 @@ function CBM_ODE(du,u,p,t)
     gH=p[15] # H-current maximal conductance
     gl=p[16] # Leak current maximal conductance
 
+    half_acts=p[17]
+
     # Variables
     V=u[1] # Membrane potential
     mNa=u[2] # Sodium current activation
@@ -101,7 +103,7 @@ function CBM_ODE(du,u,p,t)
     du[1] = (1/C) * (-gNa*mNa*hNa*(V-VNa) +
                     # Potassium Currents
                     -gKd*mKd*(V-VK) -gAf*mAf*hAf*(V-VK) -gAs*mAs*hAs*(V-VK) +
-                    -gKCa*mKCainf(Ca)*(V-VK) +
+                    -gKCa*mKCainf(Ca,half_acts[12])*(V-VK) +
                     # Calcium currents
                     -gCaL*mCaL*(V-VCa) +
                     -gCaT*mCaT*hCaT*(V-VCa) +
@@ -111,17 +113,17 @@ function CBM_ODE(du,u,p,t)
                     -gl*(V-Vl) +
                     # Stimulation currents
                     +Iapp(t) + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
-    du[2] = (1/tau_mNa(V)) * (mNainf(V) - mNa)
-    du[3] = (1/tau_hNa(V)) * (hNainf(V) - hNa)
-    du[4] = (1/tau_mKd(V)) * (mKdinf(V) - mKd)
-    du[5] = (1/tau_mAf(V)) * (mAfinf(V) - mAf)
-    du[6] = (1/tau_hAf(V)) * (hAfinf(V) - hAf)
-    du[7] = (1/tau_mAs(V)) * (mAsinf(V) - mAs)
-    du[8] = (1/tau_hAs(V)) * (hAsinf(V) - hAs)
-    du[9] = (1/tau_mCaL(V)) * (mCaLinf(V) - mCaL)
-    du[10] = (1/tau_mCaT(V)) * (mCaTinf(V) - mCaT)
-    du[11] = (1/tau_hCaT(V)) * (hCaTinf(V) - hCaT)
-    du[12] = (1/tau_mH(V)) * (mHinf(V) - mH)
+    du[2] = (1/tau_mNa(V)) * (mNainf(V,half_acts[1]) - mNa)
+    du[3] = (1/tau_hNa(V)) * (hNainf(V,half_acts[2]) - hNa)
+    du[4] = (1/tau_mKd(V)) * (mKdinf(V,half_acts[3]) - mKd)
+    du[5] = (1/tau_mAf(V)) * (mAfinf(V,half_acts[4]) - mAf)
+    du[6] = (1/tau_hAf(V)) * (hAfinf(V,half_acts[5]) - hAf)
+    du[7] = (1/tau_mAs(V)) * (mAsinf(V,half_acts[6]) - mAs)
+    du[8] = (1/tau_hAs(V)) * (hAsinf(V,half_acts[7]) - hAs)
+    du[9] = (1/tau_mCaL(V)) * (mCaLinf(V,half_acts[8]) - mCaL)
+    du[10] = (1/tau_mCaT(V)) * (mCaTinf(V,half_acts[9]) - mCaT)
+    du[11] = (1/tau_hCaT(V)) * (hCaTinf(V,half_acts[10]) - hCaT)
+    du[12] = (1/tau_mH(V)) * (mHinf(V,half_acts[11]) - mH)
     du[13] = (1/tau_Ca) * ((-αCa*gCaL*mCaL*(V-VCa))+(-β*gCaT*mCaT*hCaT*(V-VCa)) - Ca) 
 end
 

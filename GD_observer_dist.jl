@@ -3,7 +3,7 @@ using DifferentialEquations, LinearAlgebra
 using Random, Distributions
 # Random.seed!(123)
 
-include("GD_odes.jl")
+include("GD_odes_dist.jl")
 
 ## Constant simulation parameters
 
@@ -29,8 +29,9 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α1 = 0.006
-γ = 0.01
+α1 = 0.008
+γ0 = 5 # 0.02
+γs = 5*ones(5) # 0.02*ones(5)
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -38,7 +39,7 @@ gH=0.; # H-current maximal conductance
 # (mNa, hNa, mKd, mAf, hAf, mAs, hAs, 
 # mCaL, mCaT, hCaT, mH). The true values are
 # (25, 40, 15, 80, 60, 60, 20, 45, 60, 85, 85, -30)
-err = 0.005 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
+err = 0.00 # Maximum proportional error in observer model. Try eg 0.05 and 0.1.
 # half_acts = (x_sample(45, err),x_sample(60, err),x_sample(85, err))
 half_acts = (25*(1+err),40*(1+err),15*(1-err),
 80*(1+err),60*(1-err),60*(1-err),
@@ -58,12 +59,12 @@ half_act_taus = (100*(1+err_t),50*(1-err_t),30*(1-err_t),
 # Initial conditions
 x₀ = init_neur(-70.);
 x̂₀ = [-60 0.4 0.4 0.4 0.4 0.4 0.5 0.3 0.5 0.6 0.1 0.5 0.2];
-θ̂₀ = [.1 .1];
-P₀ = Matrix(I, 2, 2);
-Ψ₀ = [0 0 0 0]; # Flattened
-u0 = [x₀ x̂₀ θ̂₀ reshape(P₀,1,4) Ψ₀]
+θ̂₀ = [.1 .1 .1 .1 .1];
+P₀ = ones(5)';
+Ψ₀ = [0 0 0 0 0];
+u0 = [x₀ x̂₀ θ̂₀ P₀ Ψ₀]' # Let's feed in a column vector.
 
-Tfinal= 20000.0 # 14500.0
+Tfinal= 2000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
@@ -71,7 +72,7 @@ tspan=(0.0,Tfinal)
 #Iapp= 4. # Overwritten in the function by a hardcoded input.
 
 # Noise-generated current
-d = Normal(0,0.9)
+d = Normal(0,1)
 n_per_t = 5
 n = rand(d, Int(Tfinal*n_per_t)+2)
 # Iapp = t -> -1 - 0*t 
@@ -92,7 +93,7 @@ end
 Iconst = -1.5
 Iapp = t -> noisy_input(Iconst, n, n_per_t, t)
 save("data.jld","noise",n,"n_per_t",n_per_t)
-# Iapp = t -> 4.
+Iapp = t -> 4.
 
 # Current pulses
 I1=0. # Amplitude of first pulse
@@ -113,7 +114,7 @@ gNa,gKd,gAf,gAs,gKCa,gCaL,gCaT,gH,gl,half_acts,half_act_taus,α1)
 
 # Simulation
 # Using the calcium observer
-prob = ODEProblem(CBM_Ca_observer_with_v!,u0,tspan,p) # Simulation without noise (ODE)
+prob = ODEProblem(CBM_v_dist_observer!,u0,tspan,p) # Simulation without noise (ODE)
 # NOTE the above function is currently not using Ca, it's using Cah!!
 
 # prob = ODEProblem(CBM_observer!,u0,tspan,p) # Simulation without noise (ODE)
@@ -129,7 +130,7 @@ sol = solve(prob,dtmax=0.1,saveat=0.1)
 
 # Extract output variables
 t = sol.t; Vref = sol[1,:]; Vh = sol[14,:]; Caref = sol[13,:]; Cah = sol[26,:]
-gLh = sol[27,:]; gTh = sol[28,:]
+gLh = sol[30,:]; gTh = sol[31,:]
 
 ## Generation of figures 
 # Voltage response

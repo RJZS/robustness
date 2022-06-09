@@ -30,7 +30,7 @@ gCaT=0.51210; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Initial conditions
-u0 = init_neur(-70.);
+u0 = init_neur(-60.);
 
 Tfinal= 20000.0 # 14500.0
 tspan=(0.0,Tfinal)
