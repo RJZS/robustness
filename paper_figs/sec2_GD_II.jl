@@ -25,22 +25,22 @@ gKd=65.; # Delayed-rectifier potassium current maximal conductance
 gAf=0.; # Fast A-type potassium current maximal conductance
 gAs=0.; # Slow A-type potassium current maximal conductance
 gKCa=35.; # Calcium-activated potassium current maximal conductance
-gCaL=0.; # L-type calcium current maximal conductance
-gCaT=6.5; # T-type calcium current maximal conductance
+gCaL=2.5; # L-type calcium current maximal conductance
+gCaT=6.2; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # N2
 gl2=0.3; # Leak current maximal conductance
 gNa2=100.; # Sodium current maximal conductance
-gKd2=65.; # Delayed-rectifier potassium current maximal conductance
+gKd2=60.; # Delayed-rectifier potassium current maximal conductance
 gAf2=0.; # Fast A-type potassium current maximal conductance
 gAs2=0.; # Slow A-type potassium current maximal conductance
 gKCa2=35.; # Calcium-activated potassium current maximal conductance
 gCaL2=2.; # L-type calcium current maximal conductance
 gCaT2=6.; # T-type calcium current maximal conductance
-gH2=0.; # H-current maximal conductance
+gH2=0.07; # H-current maximal conductance
 
-gsyn21 = 4.
+gsyn21 = 1.
 gsyn12 = 4.
 
 # Initial conditions
@@ -48,7 +48,7 @@ x₀ = init_neur(-70.)
 x₀2 = init_neur(-65.)
 u0 = [x₀ x₀2 0 0] # The two synapses are at the end.
 
-Tfinal= 5000.0 # 14500.0
+Tfinal= 6800.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 Iapp = 4.
@@ -57,8 +57,8 @@ I1=-4. # Amplitude of first pulse
 ti1=2000 # Starting time of first pulse
 tf1=2500 # Ending time of first pulse
 I2=0. # Amplitude of second pulse
-ti2=000 # Starting time of second pulse
-tf2=00 # Ending time of first pulse
+ti2=5000 # Starting time of second pulse
+tf2=7501 # Ending time of first pulse
 
 Iapp2 = 4. # N2 receives a constant current.
 
@@ -99,14 +99,19 @@ p3zoom=plot(sol.t, sol[14,:],linewidth=1.5,legend=false,xlims=(ti1-50,tf1+320))
 
 p5 = plot(sol.t, sol[1,:])
 plot!(sol.t, sol[14,:])
-# l = @layout [
-#     [a{1.0*w,0.7*h}
-#     b{1.0*w,0.3*h}] [c{1.0*w,0.7*h}
-#                 d{1.0*w,0.3*h}]
-# ]
 
-# CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
-# #xlims!(0,Tfinal)
-# #ylims!(-80,-60)
+p6=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5)
+hline!([Iapp2],linewidth=1.5,linestyle=:dash)
+xlabel!("t")
+ylabel!("I_ext")
 
-# #savefig(CC,"23-Currentclamp-pulse.pdf")
+l = @layout [
+    a{1.0*w,0.7*h}
+    b{1.0*w,0.3*h}
+]
+
+CC = plot(p5,p6,layout=l,legend=false)
+#xlims!(0,Tfinal)
+#ylims!(-80,-60)
+
+savefig(CC,"sec2_GD_II.pdf")
