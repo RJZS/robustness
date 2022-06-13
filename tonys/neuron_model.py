@@ -984,7 +984,7 @@ class neuron_diag:
         mS=u[10] # Intracellular calcium concentration
         hS=u[11]
         Ca=u[12]
-        noise=u[13] # Input noise
+        noise=u[13] # Internal noise
         Q_Ca=u[14]
         #mSyn=[0.]
         if self.syn_num>0:
