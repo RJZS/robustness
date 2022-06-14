@@ -36,34 +36,34 @@ mis2=np.array([[0.9522494,  1.00529835],
  [1.00639862, 1.04303063]])
 
 # mis3=(np.random.rand(12,2)*0.02-0.01)+1.0
-mis3=(np.random.rand(12,2)*0.1-0.05)+1.0
-# mis3=np.array([[0.99613559, 0.99282902],
-#  [0.99108317, 1.00733338],
-#  [0.990744,   1.00030067],
-#  [1.00442029, 1.00776527],
-#  [0.99843125, 0.99669793],
-#  [0.99501247, 1.00510612],
-#  [1.00414166, 1.00567561],
-#  [0.99150875, 1.00000059],
-#  [0.99307946, 1.00737742],
-#  [1.00023778, 1.0091104 ],
-#  [1.00636472, 0.99636941],
-#  [1.00368592, 1.00672459]])
+# mis3=(np.random.rand(12,2)*0.1-0.05)+1.0
+mis3=np.array([[0.99613559, 0.99282902],
+ [0.99108317, 1.00733338],
+ [0.990744,   1.00030067],
+ [1.00442029, 1.00776527],
+ [0.99843125, 0.99669793],
+ [0.99501247, 1.00510612],
+ [1.00414166, 1.00567561],
+ [0.99150875, 1.00000059],
+ [0.99307946, 1.00737742],
+ [1.00023778, 1.0091104 ],
+ [1.00636472, 0.99636941],
+ [1.00368592, 1.00672459]])
 
 #mis_t=(np.random.rand(12,4)*0.01-0.005)*2+1.0
-mis_t=(np.random.rand(12,4)*0.04-0.02)*2+1.0
-# mis_t=np.array([[1.00624955, 1.00653017, 0.99632439, 1.00371368],
-#  [0.99696342, 0.992745,   0.99533094, 0.9936827 ],
-#  [1.00657543, 0.99577595, 1.00797668, 1.0082202 ],
-#  [0.9968211,  1.00796824, 1.00832337, 0.9922949 ],
-#  [1.00940513, 0.99072558, 0.99883522, 0.99657906],
-#  [0.99210138, 0.99354303, 1.00782988, 1.00993412],
-#  [1.00346248, 1.00776864, 1.0050221,  1.0009537 ],
-#  [0.99122363, 1.007003,   1.00363552, 0.99600824],
-#  [1.00503467, 0.99437215, 0.99785033, 0.99007775],
-#  [1.00216428, 0.99226534, 1.00489528, 0.99316654],
-#  [1.00536349, 0.99371844, 0.99261024, 0.99874712],
-#  [0.99540985, 1.00244202, 1.00577586, 1.00434942]])
+# mis_t=(np.random.rand(12,4)*0.04-0.02)*2+1.0
+mis_t=np.array([[1.00624955, 1.00653017, 0.99632439, 1.00371368],
+ [0.99696342, 0.992745,   0.99533094, 0.9936827 ],
+ [1.00657543, 0.99577595, 1.00797668, 1.0082202 ],
+ [0.9968211,  1.00796824, 1.00832337, 0.9922949 ],
+ [1.00940513, 0.99072558, 0.99883522, 0.99657906],
+ [0.99210138, 0.99354303, 1.00782988, 1.00993412],
+ [1.00346248, 1.00776864, 1.0050221,  1.0009537 ],
+ [0.99122363, 1.007003,   1.00363552, 0.99600824],
+ [1.00503467, 0.99437215, 0.99785033, 0.99007775],
+ [1.00216428, 0.99226534, 1.00489528, 0.99316654],
+ [1.00536349, 0.99371844, 0.99261024, 0.99874712],
+ [0.99540985, 1.00244202, 1.00577586, 1.00434942]])
 
 # generate internal dynamics with mismatches for robustness simulation
 dyns_time=dyns(mis2,mis_t,True,False)
@@ -222,6 +222,11 @@ variable_mask1=np.array([0.,0.,1.,0.,0.,0.,0.,1.]) # no synape connections so on
 cell3.set_hyp(gamma,alpha,variable_mask1)
 # get initial condition 
 X0=cell3.init_cond_OB(-60)
+
+# Make the initial condition easier
+X0[cell3.pos_dinamics+2] = 1 # Initial estimate of gT
+X0[cell3.pos_dinamics+7] = 1 # Initial estimate of gS
+
 # set simulation time
 Tfinal=20000.0
 tspan=[0.0,Tfinal]
@@ -268,3 +273,66 @@ print("Elapsed (with compilation) = %s" % (end - start))
 plt.plot(T,solBurstLearned[:,0])
 
 plt.plot(T,solBurstRef[:,0],T,0.8*solBurstLearned[:,0])
+
+## VOLTAGE OBSERVER
+## Now try learning with voltage instead of calcium
+cell5=neuron(NumbaList(
+            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
+        ),
+             e_dyns,dyns_time_act2,ob_type='V'
+        )
+cell5.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]),0.000)
+cell5.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
+cell5.set_tau(tmKCavec[0],1.,10.)
+gamma=10.
+alpha=0.001
+variable_mask2=np.array([1.,1.,1.,1.,1.,0.,1.,1.]) # no synape connections so only 8 parameters
+cell5.set_hyp(gamma,alpha,variable_mask2)
+# get initial condition 
+X0=cell5.init_cond_OB(-60)
+
+# set simulation time
+Tfinal=20000.0
+tspan=[0.0,Tfinal]
+# start simulation and the timer 
+start = time.time()
+solBurstVObs=solve_ivp(cell5.OB_ODE_V_equ,tspan , X0)
+end = time.time()
+print("Elapsed (with compilation) = %s" % (end - start))
+
+# Learned parameters
+gNalV = np.mean(solBurstVObs.y[cell5.pos_dinamics][-1000:])
+gHlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+1][-1000:])
+gTlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+2][-1000:])
+gAlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+3][-1000:])
+gKdlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+4][-1000:])
+# gleaklV = np.mean(solBurstVObs.y[cell5.pos_dinamics+5][-1000:])
+gKCalV = np.mean(solBurstVObs.y[cell5.pos_dinamics+6][-1000:])
+gSlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+7][-1000:])
+
+# Now simulate learned mismatch neuron.
+cell6=neuron(NumbaList(
+            [gTlV,gKdlV,gHlV,gNalV,gAlV,gSlV,gKCalV,C,gleak,KdCa,kc]
+        ),
+             dyns_time_act2,dyns_time_act2,ob_type='V'
+        )
+cell6.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
+cell6.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
+cell6.set_tau(tmKCavec[0],1.,10.)
+
+def noisy_input_neuron6(t,u):
+    return cell6.equ_noise(t,u,noise[int(t*10)-1])
+    
+# get initial condition 
+X0=cell6.init_cond(-5)
+# set simulation time
+Tfinal=10000.0
+tspan=[0.0,Tfinal]
+T=np.linspace(0., Tfinal, 100000)
+# start simulation and the timer 
+start = time.time()
+solBurstVLearned=odeint(noisy_input_neuron6, X0,T,tfirst=True)
+end = time.time()
+print("Elapsed (with compilation) = %s" % (end - start))
+
+plt.plot(T,solBurstVLearned[:,0])
