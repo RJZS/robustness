@@ -1,4 +1,4 @@
-from neuron_model import dyns, neuron, network,e_dyns,exp
+from neuron_txtbk_model import dyns, neuron, network,e_dyns,exp
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -76,14 +76,16 @@ dyns_time_act2=dyns(mis3,mis_t,True,True)
 
 ones=np.ones 
 # Model parameters (global)
-VNa = 50
-VK = -80
-VCa = 80
-VH = -20
+VNa = 40
+VK = -90
+VCa = 120
+VH = -40
 Vleak = -50
+C = 0.1
+
+# Not adjusted
 VSyn = -75
 taus = 10.
-C = 1.
 taumean=30.
 
 # Model parameters (mean)
@@ -93,27 +95,6 @@ Iappvec = 0.*ones(5) + 0/2*(np.random.rand(5)-0.5)
 kcvec = 0.94*ones(5)
 KdCavec = 3.*ones(5)
 
-gleakvec = 0.01*ones(5)
-
-gNavec = [652.814,503.58,634.723,459.807,616.433]
-gCaTvec = [0.992884,0.824788,1.04958,1.14911,0.971846]
-gCaTvec_MOD = [2.38666,2.19092,2.3409,2.82957,3.52574]
-gCaSvec = [3.51903,3.55081,3.36012,2.49984,2.50894]
-gCaSvec_MOD = [8.52841,8.00527,9.24152,9.73135,8.79102]
-gAvec = [51.5008,58.3269,40.3572,58.5102,51.8502]
-gKdvec = [109.659,84.1655,74.7833,91.1938,111.87]
-gKCavec = [63.0373,54.1351,65.7822,55.9324,70.2168]
-gHvec = [0.107445,0.0929811,0.078182,0.083414,0.0887343]
-tmKCavec = [3.93883,3.24514,5.55055,12.6351,16.6223]
-
-gsyn12 = 0.07635083670743605
-gsyn13 = 0.07988922275521991
-gsyn21 = 0.07716951193265496
-gsyn45 = 0.07762158408977728
-gsyn53 = .08835472319081544
-gsyn54 = 0.11712333284581126
-gEl23 = 0.021083916923133217
-gEl43 = 0.022874860313218278
 
 @jit
 def sigmoid(x,tau):
@@ -128,211 +109,43 @@ noise=(noise-noise.mean())*2
 plt.plot(noise[0:10000])
 print(noise.var())
 
-## Parameters for Bursting
-# Model parameters (global)
-VNa = 40
-VK = -90
-VCa = 120
-VH = -40
-Vleak = -50
-VSyn = -75
-taus = 10.
-C = 0.1
-taumean=30.
-
 # Model parameters (mean)
 Iapp = 0.
-kc = 0.94
-KdCa = 3.
 
 gleak = 0.3
-
-gNa = 120
+gNa = 100.
+gKd = 65.
+gKCa = 8.
+gCaL = 4.
 gCaT= 0.5
-gCaS = 4
-gA = 0
-gKd = 80
-gKCa = 30
 gH = 0
+gA = 0
+
+# Not adjusted. Note alphaCa and betaCa are set in __init__.
+kc = 0.94
+KdCa = 3.
 tmKCa = 3.93883
 
+
 cell1=neuron(NumbaList(
-            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
+            [gCaT,gKd,gH,gNa,gA,gCaL,gKCa,C,gleak,KdCa,kc]
         ),
              e_dyns,e_dyns,ob_type='Ca'
         )
-cell1.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
+cell1.set_input(NumbaList([-2,10,4,3000,3100,5000,8001,2,0,0]),0.000)
 cell1.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell1.set_tau(tmKCavec[0],1.,10.)
-
-def noisy_input_neuron(t,u):
-    return cell1.equ_noise(t,u,noise[int(t*10)-1])
+tmKCavec = [3.93883,3.24514,5.55055,12.6351,16.6223] # Fluff
+cell1.set_tau(tmKCavec[0],1.,10.) # Fluff
 
 X0=cell1.init_cond(-0)
 # set simulation time
-Tfinal=10000.0
+Tfinal=8000.0
 tspan=[0.0,Tfinal]
 T=np.linspace(0., Tfinal, 100000)
 # start simulation and the timer 
 start = time.time()
-solBurstRef=odeint(noisy_input_neuron, X0,T,tfirst=True)
+solBurstRef=odeint(cell1.equ, X0,T,tfirst=True)
 end = time.time()
 print("Elapsed (with compilation) = %s" % (end - start))
 
 plt.plot(T,solBurstRef[:,0])
-
-# Now the mismatched neuron
-cell2=neuron(NumbaList(
-            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
-        ),
-             dyns_time_act2,dyns_time_act2,ob_type='Ca'
-        )
-cell2.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
-cell2.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell2.set_tau(tmKCavec[0],1.,10.)
-
-def noisy_input_neuron2(t,u):
-    return cell2.equ_noise(t,u,noise[int(t*10)-1])
-    
-# get initial condition 
-X0=cell2.init_cond(-5) # changed initial conds
-
-# start simulation and the timer 
-start = time.time()
-solBurstMis=odeint(noisy_input_neuron2, X0,T,tfirst=True)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-plt.plot(T,solBurstMis[:,0])
-
-plt.plot(T,solBurstRef[:,0],T,solBurstMis[:,0])
-
-# Now try learning the mismatched neuron
-cell3=neuron(NumbaList(
-            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
-        ),
-             e_dyns,dyns_time_act2,ob_type='Ca'
-        )
-cell3.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]),0.000)
-cell3.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell3.set_tau(tmKCavec[0],1.,10.)
-gamma=10.
-alpha=0.001
-variable_mask1=np.array([0.,0.,1.,0.,0.,0.,0.,1.]) # no synape connections so only 8 parameters
-cell3.set_hyp(gamma,alpha,variable_mask1)
-# get initial condition 
-X0=cell3.init_cond_OB(-60)
-
-# Make the initial condition easier
-X0[cell3.pos_dinamics+2] = 1 # Initial estimate of gT
-X0[cell3.pos_dinamics+7] = 1 # Initial estimate of gS
-
-# set simulation time
-Tfinal=20000.0
-tspan=[0.0,Tfinal]
-# start simulation and the timer 
-start = time.time()
-solBurstCaObs=solve_ivp(cell3.OB_ODE_Ca_equ,tspan , X0)#use Ca observer
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-# Convergence of theta_hat
-idx_tmp = -200000
-plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3.pos_dinamics+2][idx_tmp:])
-plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3.pos_dinamics+7][idx_tmp:])
-
-# Learned parameters
-gTl = np.mean(solBurstCaObs.y[cell3.pos_dinamics+2][-1000:])
-gSl = np.mean(solBurstCaObs.y[cell3.pos_dinamics+7][-1000:])
-
-# Now simulate learned mismatch neuron.
-cell4=neuron(NumbaList(
-            [gTl,gKd,gH,gNa,gA,gSl,gKCa,C,gleak,KdCa,kc]
-        ),
-             dyns_time_act2,dyns_time_act2,ob_type='Ca'
-        )
-cell4.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
-cell4.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell4.set_tau(tmKCavec[0],1.,10.)
-
-def noisy_input_neuron4(t,u):
-    return cell4.equ_noise(t,u,noise[int(t*10)-1])
-    
-# get initial condition 
-X0=cell4.init_cond(-5)
-# set simulation time
-Tfinal=10000.0
-tspan=[0.0,Tfinal]
-T=np.linspace(0., Tfinal, 100000)
-# start simulation and the timer 
-start = time.time()
-solBurstLearned=odeint(noisy_input_neuron4, X0,T,tfirst=True)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-plt.plot(T,solBurstLearned[:,0])
-
-plt.plot(T,solBurstRef[:,0],T,0.8*solBurstLearned[:,0])
-
-## VOLTAGE OBSERVER
-## Now try learning with voltage instead of calcium
-cell5=neuron(NumbaList(
-            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
-        ),
-             e_dyns,dyns_time_act2,ob_type='V'
-        )
-cell5.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]),0.000)
-cell5.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell5.set_tau(tmKCavec[0],1.,10.)
-gamma=10.
-alpha=0.001
-variable_mask2=np.array([1.,1.,1.,1.,1.,0.,1.,1.]) # no synape connections so only 8 parameters
-cell5.set_hyp(gamma,alpha,variable_mask2)
-# get initial condition 
-X0=cell5.init_cond_OB(-60)
-
-# set simulation time
-Tfinal=20000.0
-tspan=[0.0,Tfinal]
-# start simulation and the timer 
-start = time.time()
-solBurstVObs=solve_ivp(cell5.OB_ODE_V_equ,tspan , X0)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-# Learned parameters
-gNalV = np.mean(solBurstVObs.y[cell5.pos_dinamics][-1000:])
-gHlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+1][-1000:])
-gTlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+2][-1000:])
-gAlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+3][-1000:])
-gKdlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+4][-1000:])
-# gleaklV = np.mean(solBurstVObs.y[cell5.pos_dinamics+5][-1000:])
-gKCalV = np.mean(solBurstVObs.y[cell5.pos_dinamics+6][-1000:])
-gSlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+7][-1000:])
-
-# Now simulate learned mismatch neuron.
-cell6=neuron(NumbaList(
-            [gTlV,gKdlV,gHlV,gNalV,gAlV,gSlV,gKCalV,C,gleak,KdCa,kc]
-        ),
-             dyns_time_act2,dyns_time_act2,ob_type='V'
-        )
-cell6.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
-cell6.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell6.set_tau(tmKCavec[0],1.,10.)
-
-def noisy_input_neuron6(t,u):
-    return cell6.equ_noise(t,u,noise[int(t*10)-1])
-    
-# get initial condition 
-X0=cell6.init_cond(-5)
-# set simulation time
-Tfinal=10000.0
-tspan=[0.0,Tfinal]
-T=np.linspace(0., Tfinal, 100000)
-# start simulation and the timer 
-start = time.time()
-solBurstVLearned=odeint(noisy_input_neuron6, X0,T,tfirst=True)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-plt.plot(T,solBurstVLearned[:,0])
