@@ -12,25 +12,24 @@ tau_us = 50*50
 
 afn = -2
 asp = 2
-asn =  -1.6
-ausp =  2
+asn =  -1.5
+ausp =  1.5
 
 dfn = 0
 dsp = 0
 dsn = -0.88
-dusp = 0
+dusp = -0.88
 
 afn2 = -2
 asp2 = 2
-asn2 =  -1.6
-ausp2 =  2
+asn2 =  -1.7
+ausp2 =  1.5
 
 asyn21 = -0.2
 asyn12 = -0.2
 
 deltasyn = -1
 delta_h = -0.5
-
 beta = 2
 
 # delta_ests = (0, 0, -1.5, -1.5)
@@ -38,10 +37,10 @@ beta = 2
 
 delta_ests_true = [dfn,dsp,dsn,dusp,delta_h,dfn,dsp,dsn,dusp,delta_h,deltasyn,deltasyn]
 mis = (rand(Uniform(0,0.1),12).-0.05).+1
-delta_ests = [0.01,-0.01,-0.88,0.01,-0.5,-0.01,0.01,-0.88,-0.01,-0.5,-0.2,0.2].*mis
+delta_ests = [0.01,-0.01,-0.88,-0.88,-0.5,-0.01,0.01,-0.88,-0.88,-0.5,-1,-1].*mis
 
 # Initial conditions
-x0 = [-1.8 -1.8 -1.8 -1.6 -1.6 -1.6]
+x0 = [-1.6 -1.6 -1.6 0 0 0]
 u0 = x0
 
 dt = 0.1
@@ -49,8 +48,8 @@ dt = 0.1
 # Noise-generated current
 d = Normal(0,1)
 Tfinalrel = 20000
-noise = rand(d, round(Int, Tfinalrel/dt+1))*0
-Iconst = -2.5
+noise = rand(d, round(Int, Tfinalrel/dt+1))*15
+Iconst = -2
 
 for i in eachindex(noise)
     i == 1 ? noise[i] = 0 : noise[i]=noise[i-1]+(noise[i]-noise[i-1])/2000
@@ -58,7 +57,7 @@ end
 noise = noise .+ Iconst
 plot(noise)
 
-Iapp2 = -2.2
+Iapp2 = -0.65
 
 save("LR_rel_II.jld","noise",noise,"mis",mis)
 # noise = load("LR_rel_II.jld")["noise"]
@@ -72,16 +71,18 @@ p=(afn,asp,asn,ausp,afn2,asp2,asn2,ausp2,tau_s,tau_us,noise,Iapp2,asyn21,asyn12,
 probRef = ODEProblem(LR_ODE_rel_II!,u0,tspan,p) # Simulation without noise (ODE)
 solRef = solve(probRef,Euler(),adaptive=false,dt=dt)
 
+plot(solRef.t, solRef[1,:],linewidth=1.5,legend=false)
+
 # p1=plot(solRef.t, solRef[1,:],linewidth=1.5,legend=false)
 # ylabel!("V")
 
 # Now try the mismatched neuron.
-x0 = [-1.5 -1.5 -1.5]
+x0 = [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5]
 u0 = x0
 Tfinal= Tfinalrel
 tspan=(0.0,Tfinal)
-p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,noise,delta_ests)
-probMis = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
+p=(afn,asp,asn,ausp,afn2,asp2,asn2,ausp2,tau_s,tau_us,noise,Iapp2,asyn21,asyn12,delta_ests,beta)
+probMis = ODEProblem(LR_ODE_rel_II!,u0,tspan,p) # Simulation without noise (ODE)
 solMis = solve(probMis,Euler(),adaptive=false,dt=dt)
 
 p1=plot(solRef.t, solRef[1,:])

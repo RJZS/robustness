@@ -284,8 +284,7 @@ function LR_ODE_rel_II!(du,u,p,t)
     du[1] = -V  -element(V,afn,deltas[1]) -element(Vs,asp,deltas[2]) +
                 -element(Vs,asn_with_inact,deltas[3]) -element(Vus,ausp,deltas[4]) +
                 synapse(Vs2, asyn12, deltas[12], beta) +
-                noise[round(Int, t/dt)+1] + 
-                I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
+                noise[round(Int, t/dt)+1]
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
