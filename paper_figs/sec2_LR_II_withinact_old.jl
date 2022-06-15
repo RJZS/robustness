@@ -10,18 +10,18 @@ tau_us = 50*50
 
 afn = -2
 asp = 2
-asn =  -1.6
-ausp =  2
+asn =  -1.5
+ausp =  1.5
 
 dfn = 0
 dsp = 0
 dsn = -0.88
-dusp = 0
+dusp = -0.88
 
 afn2 = -2
 asp2 = 2
-asn2 =  -1.6
-ausp2 =  2
+asn2 =  -1.7
+ausp2 =  1.5
 
 asyn21 = -0.2
 asyn12 = -0.2
@@ -30,34 +30,32 @@ deltasyn = -1
 delta_h = -0.5
 
 # Initial conditions
-x0 = [-0.2 -0.2 -0.2]
+x0 = [-1.6 -1.6 -1.6]
 x02 = [0 0 0]
 u0 = [x0 x02]
 
-Tfinal= 18000.0
+Tfinal= 16000.0
 tspan=(0.0,Tfinal)
 
-Iapp = -2.2 # -0.8
+Iapp = -2.2
 # Current pulses
-I1=0 # Amplitude of first pulse
+I1=1.4 # Amplitude of first pulse
 ti1=4500 # Starting time of first pulse
 tf1=6000 # Ending time of first pulse
-I2=0 # Amplitude of second pulse
+I2=1.4 # Amplitude of second pulse
 ti2=9000 # Starting time of second pulse
 tf2=16001 # Ending time of first pulse
 
-Iapp2 = -2.5
-I3=0.3 # Amplitude of first pulse
-ti3=6000 # Starting time of first pulse
-tf3=7001 # Ending time of first pulse
-I4=0.3 # Amplitude of second pulse
-ti4=12000 # Starting time of second pulse
-tf4=18001 # Ending time of first pulse
+Iapp2 = -0.65
+I3=0. # Amplitude of first pulse
+ti3=4000 # Starting time of first pulse
+tf3=10001 # Ending time of first pulse
+
 
 # Parameter vector for simulations
 p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,
     Iapp,I1,I2,ti1,tf1,ti2,tf2,afn2,asp2,asn2,ausp2,Iapp2,
-    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h,I4,ti4,tf4)
+    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h)
 
 # Simulation
 # Using the calcium observer
@@ -77,18 +75,18 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 plot!(sol.t, sol[4,:])
 ylabel!("V")
 
-p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+1620))
-plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+1620))
+p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti1-400,tf1+820))
+plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti1-400,tf1+820))
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
 p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5)
-plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4),linewidth=1.5)
+plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3),linewidth=1.5)
 xlabel!("t")
 ylabel!("I_ext")
 
-p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti3-800,tf3+1620))
-plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4),linewidth=1.5,xlims=(ti3-800,tf3+1620))
+p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti1-400,tf1+820))
+hline!([Iapp2],linewidth=1.5)
 xlabel!("t")
 
 l = @layout [

@@ -12,7 +12,6 @@ Xinf(V,A,B)=1/(1+exp((V+A)/B))
 # All timeconstant curves are defined by the shifted Boltzman function
 tauX(V,A,B,D,E)=A-B/(1+exp((V+D)/E))
 
-
 # Sodium current
 mNainf(V,r=25.,s=-5.) = Xinf(V,r,s); tau_mNa(V,r=100.) = tauX(V,0.75,0.5,r,-20.)
 hNainf(V,r=40.,s=10.) = Xinf(V,r,s); tau_hNa(V,r=50.) = tauX(V,4.0,3.5,r,-20.)
@@ -40,6 +39,8 @@ hCaTinf(V,r=85,s=10.) = Xinf(V,r,s); tau_hCaT(V,r=30.) = 100*tauX(V,6.0,5.5,r,-2
 # Cation current (H-current)
 mHinf(V,r=85) = Xinf(V,r,10.); tau_mH(V,r=30.) = 50*tauX(V,6.0,5.5,r,-20.);
 
+# Synapse
+sinf(V,r=68,s=-2) = Xinf(V,r,s); stau(V,r=30.) = tauX(V,6.0,5.5,r,-20.)
 
 tau_Ca = 500.
 
@@ -125,6 +126,202 @@ function CBM_ODE(du,u,p,t)
     du[11] = (1/tau_hCaT(V)) * (hCaTinf(V,half_acts[10]) - hCaT)
     du[12] = (1/tau_mH(V)) * (mHinf(V,half_acts[11]) - mH)
     du[13] = (1/tau_Ca) * ((-αCa*gCaL*mCaL*(V-VCa))+(-β*gCaT*mCaT*hCaT*(V-VCa)) - Ca) 
+end
+
+function CBM_ODE_sec2(du,u,p,t)
+    # Stimulations parameters
+    Iapp=p[1] # Amplitude of constant applied current
+    I1=p[2] # Amplitude of first step input
+    I2=p[3] # Amplitude of second step input
+    ti1=p[4] # Starting time of first step input
+    tf1=p[5] # Ending time of first step input
+    ti2=p[6] # Starting time of second step input
+    tf2=p[7] # Ending time of second step input
+    
+    # Maximal conductances
+    gNa=p[8] # Sodium current maximal conductance
+    gKd=p[9]  # Delayed-rectifier potassium current maximal conductance
+    gAf=p[10] # Fast A-type potassium current maximal conductance
+    gAs=p[11] # Slow A-type potassium current maximal conductance
+    gKCa=p[12] # Calcium-activated potassium current maximal conductance
+    gCaL=p[13] # L-type calcium current maximal conductance
+    gCaT=p[14] # T-type calcium current maximal conductance
+    gH=p[15] # H-current maximal conductance
+    gl=p[16] # Leak current maximal conductance
+
+    # Variables
+    V=u[1] # Membrane potential
+    mNa=u[2] # Sodium current activation
+    hNa=u[3] # Sodium current inactivation
+    mKd=u[4] # Delayed-rectifier potassium current activation
+    mAf=u[5] # Fast A-type potassium current activation
+    hAf=u[6] # Fast A-type potassium current inactivation
+    mAs=u[7] # Slow A-type potassium current activation
+    hAs=u[8] # Slow A-type potassium current inactivation
+    mCaL=u[9] # L-type calcium current activation
+    mCaT=u[10] # T-type calcium current activation
+    hCaT=u[11] # T-type calcium current inactivation
+    mH=u[12] # H current activation
+    Ca=u[13] # Intracellular calcium concentration
+
+    # ODEs
+                    # Sodium current
+    du[1] = (1/C) * (-gNa*mNa*hNa*(V-VNa) +
+                    # Potassium Currents
+                    -gKd*mKd*(V-VK) -gAf*mAf*hAf*(V-VK) -gAs*mAs*hAs*(V-VK) +
+                    -gKCa*mKCainf(Ca)*(V-VK) +
+                    # Calcium currents
+                    -gCaL*mCaL*(V-VCa) +
+                    -gCaT*mCaT*hCaT*(V-VCa) +
+                    # Cation current
+                    -gH*mH*(V-VH) +
+                    # Passive currents
+                    -gl*(V-Vl) +
+                    # Stimulation currents
+                    +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
+    du[2] = (1/tau_mNa(V)) * (mNainf(V) - mNa)
+    du[3] = (1/tau_hNa(V)) * (hNainf(V) - hNa)
+    du[4] = (1/tau_mKd(V)) * (mKdinf(V) - mKd)
+    du[5] = (1/tau_mAf(V)) * (mAfinf(V) - mAf)
+    du[6] = (1/tau_hAf(V)) * (hAfinf(V) - hAf)
+    du[7] = (1/tau_mAs(V)) * (mAsinf(V) - mAs)
+    du[8] = (1/tau_hAs(V)) * (hAsinf(V) - hAs)
+    du[9] = (1/tau_mCaL(V)) * (mCaLinf(V) - mCaL)
+    du[10] = (1/tau_mCaT(V)) * (mCaTinf(V) - mCaT)
+    du[11] = (1/tau_hCaT(V)) * (hCaTinf(V) - hCaT)
+    du[12] = (1/tau_mH(V)) * (mHinf(V) - mH)
+    du[13] = (1/tau_Ca) * ((-αCa*gCaL*mCaL*(V-VCa))+(-β*gCaT*mCaT*hCaT*(V-VCa)) - Ca) 
+end
+
+function CBM_II_sec2(du,u,p,t)
+    # Stimulations parameters
+    Iapp=p[1] # Amplitude of constant applied current
+    I1=p[2] # Amplitude of first step input
+    I2=p[3] # Amplitude of second step input
+    ti1=p[4] # Starting time of first step input
+    tf1=p[5] # Ending time of first step input
+    ti2=p[6] # Starting time of second step input
+    tf2=p[7] # Ending time of second step input
+    
+    # Maximal conductances
+    gNa=p[8] # Sodium current maximal conductance
+    gKd=p[9]  # Delayed-rectifier potassium current maximal conductance
+    gAf=p[10] # Fast A-type potassium current maximal conductance
+    gAs=p[11] # Slow A-type potassium current maximal conductance
+    gKCa=p[12] # Calcium-activated potassium current maximal conductance
+    gCaL=p[13] # L-type calcium current maximal conductance
+    gCaT=p[14] # T-type calcium current maximal conductance
+    gH=p[15] # H-current maximal conductance
+    gl=p[16] # Leak current maximal conductance
+
+    # And for Neur 2
+    gNa2=p[17] # Sodium current maximal conductance
+    gKd2=p[18]  # Delayed-rectifier potassium current maximal conductance
+    gAf2=p[19] # Fast A-type potassium current maximal conductance
+    gAs2=p[20] # Slow A-type potassium current maximal conductance
+    gKCa2=p[21] # Calcium-activated potassium current maximal conductance
+    gCaL2=p[22] # L-type calcium current maximal conductance
+    gCaT2=p[23] # T-type calcium current maximal conductance
+    gH2=p[24] # H-current maximal conductance
+    gl2=p[25] # Leak current maximal conductance
+
+    gsyn21 = p[26] # Synapse from 1 to 2
+    gsyn12 = p[27] # Synapse from 2 to 1
+
+    Iapp2 = p[28] # Second neuron receives a constant applied current
+
+    # Variables
+    V=u[1] # Membrane potential
+    mNa=u[2] # Sodium current activation
+    hNa=u[3] # Sodium current inactivation
+    mKd=u[4] # Delayed-rectifier potassium current activation
+    mAf=u[5] # Fast A-type potassium current activation
+    hAf=u[6] # Fast A-type potassium current inactivation
+    mAs=u[7] # Slow A-type potassium current activation
+    hAs=u[8] # Slow A-type potassium current inactivation
+    mCaL=u[9] # L-type calcium current activation
+    mCaT=u[10] # T-type calcium current activation
+    hCaT=u[11] # T-type calcium current inactivation
+    mH=u[12] # H current activation
+    Ca=u[13] # Intracellular calcium concentration
+
+    V2=u[14] # Membrane potential
+    mNa2=u[15] # Sodium current activation
+    hNa2=u[16] # Sodium current inactivation
+    mKd2=u[17] # Delayed-rectifier potassium current activation
+    mAf2=u[18] # Fast A-type potassium current activation
+    hAf2=u[19] # Fast A-type potassium current inactivation
+    mAs2=u[20] # Slow A-type potassium current activation
+    hAs2=u[21] # Slow A-type potassium current inactivation
+    mCaL2=u[22] # L-type calcium current activation
+    mCaT2=u[23] # T-type calcium current activation
+    hCaT2=u[24] # T-type calcium current inactivation
+    mH2=u[25] # H current activation
+    Ca2=u[26] # Intracellular calcium concentration
+
+    s1 = u[27]
+    s2 = u[28]
+
+    # ODEs
+                    # Sodium current
+    du[1] = (1/C) * (-gNa*mNa*hNa*(V-VNa) +
+                    # Potassium Currents
+                    -gKd*mKd*(V-VK) -gAf*mAf*hAf*(V-VK) -gAs*mAs*hAs*(V-VK) +
+                    -gKCa*mKCainf(Ca)*(V-VK) +
+                    # Calcium currents
+                    -gCaL*mCaL*(V-VCa) +
+                    -gCaT*mCaT*hCaT*(V-VCa) +
+                    # Cation current
+                    -gH*mH*(V-VH) +
+                    # Passive currents
+                    -gl*(V-Vl) +
+                    # Synaptic current
+                    -gsyn12*s1*(V-Esyn) +
+                    # Stimulation currents
+                    +Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2))
+    du[2] = (1/tau_mNa(V)) * (mNainf(V) - mNa)
+    du[3] = (1/tau_hNa(V)) * (hNainf(V) - hNa)
+    du[4] = (1/tau_mKd(V)) * (mKdinf(V) - mKd)
+    du[5] = (1/tau_mAf(V)) * (mAfinf(V) - mAf)
+    du[6] = (1/tau_hAf(V)) * (hAfinf(V) - hAf)
+    du[7] = (1/tau_mAs(V)) * (mAsinf(V) - mAs)
+    du[8] = (1/tau_hAs(V)) * (hAsinf(V) - hAs)
+    du[9] = (1/tau_mCaL(V)) * (mCaLinf(V) - mCaL)
+    du[10] = (1/tau_mCaT(V)) * (mCaTinf(V) - mCaT)
+    du[11] = (1/tau_hCaT(V)) * (hCaTinf(V) - hCaT)
+    du[12] = (1/tau_mH(V)) * (mHinf(V) - mH)
+    du[13] = (1/tau_Ca) * ((-αCa*gCaL*mCaL*(V-VCa))+(-β*gCaT*mCaT*hCaT*(V-VCa)) - Ca) 
+
+    du[14] = (1/C) * (-gNa2*mNa2*hNa2*(V2-VNa) +
+                    # Potassium Currents
+                    -gKd2*mKd2*(V2-VK) -gAf2*mAf2*hAf2*(V2-VK) -gAs2*mAs2*hAs2*(V2-VK) +
+                    -gKCa2*mKCainf(Ca2)*(V2-VK) +
+                    # Calcium currents
+                    -gCaL2*mCaL2*(V2-VCa) +
+                    -gCaT2*mCaT2*hCaT2*(V2-VCa) +
+                    # Cation current
+                    -gH2*mH2*(V2-VH) +
+                    # Passive currents
+                    -gl2*(V2-Vl) +
+                    # Synaptic current
+                    -gsyn21*s2*(V2-Esyn) +
+                    # Stimulation currents
+                    +Iapp2)
+    du[15] = (1/tau_mNa(V2)) * (mNainf(V2) - mNa2)
+    du[16] = (1/tau_hNa(V2)) * (hNainf(V2) - hNa2)
+    du[17] = (1/tau_mKd(V2)) * (mKdinf(V2) - mKd2)
+    du[18] = (1/tau_mAf(V2)) * (mAfinf(V2) - mAf2)
+    du[19] = (1/tau_hAf(V2)) * (hAfinf(V2) - hAf2)
+    du[20] = (1/tau_mAs(V2)) * (mAsinf(V2) - mAs2)
+    du[21] = (1/tau_hAs(V2)) * (hAsinf(V2) - hAs2)
+    du[22] = (1/tau_mCaL(V2)) * (mCaLinf(V2) - mCaL2)
+    du[23] = (1/tau_mCaT(V2)) * (mCaTinf(V2) - mCaT2)
+    du[24] = (1/tau_hCaT(V2)) * (hCaTinf(V2) - hCaT2)
+    du[25] = (1/tau_mH(V2)) * (mHinf(V2) - mH2)
+    du[26] = (1/tau_Ca) * ((-αCa*gCaL2*mCaL2*(V2-VCa))+(-β*gCaT2*mCaT2*hCaT2*(V2-VCa)) - Ca2)
+
+    du[27] = (1/stau(V2)) * (sinf(V2) - s1)
+    du[28] = (1/stau(V)) * (sinf(V) - s2)
 end
 
 # For the reliability experiment.
