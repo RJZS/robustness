@@ -1,0 +1,6 @@
+*.jld
+*.png
+*.pdf
+*.npy
+*__pycache__*
+*.ipynb_checkpoints
