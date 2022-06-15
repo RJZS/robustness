@@ -275,24 +275,25 @@ function LR_observer_noinact!(du,u,p,t)
     Vh = u[4]
     Vsh = u[5]
     Vush = u[6]
-    θ̂= u[7]
+    θ̂= u[7:10]
     # P = reshape(u[28+1:28+4],2,2);    
     # P = (P+P')/2
-    P = u[8]
-    Ψ = u[9]
+    P = u[11:14]
+    Ψ = u[15:18]
 
-    ϕ̂ = -element(Vush,1,delta_ests[4])
+    ϕ̂ = [-element(V,1,delta_ests[1]) ...
+        -element(Vsh,1,delta_ests[2]) ...
+        -element(Vsh,1,delta_ests[3]) ...
+        -element(Vush,1,delta_ests[4])]
 
-    du[4] = dot(ϕ̂,θ̂) -V  -element(V,afn,delta_ests[1]) -element(Vsh,asp,delta_ests[2]) +
-                -element(Vsh,asn,delta_ests[3]) + Iapp +
-                γ*(1+Ψ'*P*Ψ)*(V-Vh)
+    du[4] = dot(ϕ̂,θ̂) -V  + Iapp + γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[5] = (1/tau_s) * (V - Vsh)
     du[6] = (1/tau_us) * (V - Vush)
     
-    du[7]= γ*P*Ψ*(V-Vh); # dθ̂ 
-    du[9] = -γ*Ψ + ϕ̂;  # dΨ
-    du[8] = α*P - ((P*Ψ)*(P*Ψ)');
+    du[7:10]= γ*P.*Ψ*(V-Vh); # dθ̂ 
+    du[15:18] = -γ*Ψ + ϕ̂;  # dΨ
+    du[11:14] = α*P - α*P.^2 .* Ψ.^2; # ((P*Ψ)*(P*Ψ)');
     # dP = (dP+dP')/2;
     # du[8] = dP[:]
 end
