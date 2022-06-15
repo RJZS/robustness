@@ -413,3 +413,112 @@ function LR_observer!(du,u,p,t)
     # dP = (dP+dP')/2;
     # du[8] = dP[:]
 end
+
+function LR_observer_II!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+
+    # Gains of second neuron
+    afn2 = p[5]
+    asp2 = p[6]
+    asn2 = p[7]
+    ausp2 = p[8]
+    
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+
+    # Inputs
+    Iapp = p[11]
+    Iapp2 = p[12]
+
+    # Synaptic parameters
+    asyn21 = p[13]
+    asyn12 = p[14]
+
+    deltas = p[15] # [dfn1 dsp1 dsn1 dusp1 delta_h1 dfn2 ... dsyn21 dsyn12]
+    delta_mis = p[16]
+    beta = p[17]
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    V2 = u[4]
+    Vs2 = u[5]
+    Vus2 = u[6]
+
+    # ODEs
+    asn_with_inact = asn * sigmoid(-(Vus-deltas[5]),beta)
+    du[1] = -V  -element(V,afn,deltas[1]) -element(Vs,asp,deltas[2]) +
+                -element(Vs,asn_with_inact,deltas[3]) -element(Vus,ausp,deltas[4]) +
+                synapse(Vs2, asyn12, deltas[12], beta) +
+                Iapp
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    asn2_with_inact = asn2 * sigmoid(-(Vus2-deltas[10]),beta)
+    du[4] = -V2  -element(V2,afn2,deltas[6]) -element(Vs2,asp2,deltas[7]) +
+                -element(Vs2,asn2_with_inact,deltas[8]) -element(Vus2,ausp2,deltas[9]) +
+                synapse(Vs, asyn21, deltas[11], beta) +
+                Iapp2
+    du[5] = (1/tau_s)  * (V2 - Vs2)
+    du[6] = (1/tau_us) * (V2 - Vus2)
+
+    # Adaptive Observer
+    Vh = u[7]
+    Vsh = u[8]
+    Vush = u[9]
+
+    V2h = u[10]
+    Vs2h = u[11]
+    Vus2h = u[12]
+
+    θ̂= u[13:22]
+    # P = reshape(u[28+1:28+4],2,2);    
+    # P = (P+P')/2
+
+    P = u[23:27]
+    P2 = u[28:32]
+    Ψ = u[33:37]
+    Ψ2 = u[38:42]
+
+    ϕ̂ = [-element(V,1,delta_ests[1]) ...
+        -element(Vsh,1,delta_ests[2]) ...
+        -element(Vsh,1,delta_ests[3])* sigmoid(-(Vus-deltas[5]),beta) ...
+        -element(Vush,1,delta_ests[4]) ...
+        synapse(Vs2, 1, deltas[12], beta)]
+
+    du[7] = dot(ϕ̂,θ̂[13:17]) -V  + Iapp + 
+            γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
+
+    du[8] = (1/tau_s) * (V - Vsh)
+    du[9] = (1/tau_us) * (V - Vush)
+
+    ϕ̂2 = [-element(V2,1,delta_ests[6]) ...
+        -element(Vs2h,1,delta_ests[7]) ...
+        -element(Vs2h,1,delta_ests[8])* sigmoid(-(Vu2s-deltas[10]),beta) ...
+        -element(Vus2h,1,delta_ests[9]) ...
+        synapse(Vs, 1, deltas[11], beta)]
+
+    du[10] = dot(ϕ̂2,θ̂[18:22]) -V2  + Iapp2 + 
+            γ*(1+sum(P2.*Ψ2.^2))*(V2-V2h) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
+
+    du[11] = (1/tau_s) * (V2 - Vs2h)
+    du[12] = (1/tau_us) * (V2 - Vus2h)
+    
+    du[13:17]= γ*P.*Ψ*(V-Vh); # dθ̂  (neuron 1)
+    du[18:22]= γ*P2.*Ψ2*(V2-V2h); # dθ̂  (neuron 2)
+
+    du[33:37] = -γ*Ψ + ϕ̂;  # dΨ1
+    du[38:42] = -γ*Ψ2 + ϕ̂2;  # dΨ2
+
+    du[23:27] = α*P - α*P.^2 .* Ψ.^2; # ((P*Ψ)*(P*Ψ)'); Neuron 1
+    du[28:32] = α*P2 - α*P2.^2 .* Ψ2.^2; # ((P*Ψ)*(P*Ψ)'); Neuron 2
+    # dP = (dP+dP')/2;
+    # du[8] = dP[:]
+end
