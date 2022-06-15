@@ -54,6 +54,7 @@ function LR_ODE!(du,u,p,t)
     du[3] = (1/tau_us) * (V - Vus)
 end
 
+# Deprecated (no inact)
 function LR_II_ODE!(du,u,p,t)
     # Gains
     afn = p[1]
@@ -238,6 +239,63 @@ function LR_ODE_rel!(du,u,p,t)
                 noise[round(Int, t/dt)+1]
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
+end
+
+function LR_ODE_rel_II!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+
+    # Gains of second neuron
+    afn2 = p[5]
+    asp2 = p[6]
+    asn2 = p[7]
+    ausp2 = p[8]
+    
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+
+    # Inputs
+    noise = p[11]
+    Iapp2 = p[12]
+
+    # Synaptic parameters
+    asyn21 = p[13]
+    asyn12 = p[14]
+
+    deltas = p[15] # [dfn1 dsp1 dsn1 dusp1 delta_h1 dfn2 ... dsyn21 dsyn12]
+    beta = p[16]
+
+
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    V2 = u[4]
+    Vs2 = u[5]
+    Vus2 = u[6]
+
+    # ODEs
+    asn_with_inact = asn * sigmoid(-(Vus-deltas[5]),beta)
+    du[1] = -V  -element(V,afn,deltas[1]) -element(Vs,asp,deltas[2]) +
+                -element(Vs,asn_with_inact,deltas[3]) -element(Vus,ausp,deltas[4]) +
+                synapse(Vs2, asyn12, deltas[12], beta) +
+                noise[round(Int, t/dt)+1] + 
+                I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    asn2_with_inact = asn2 * sigmoid(-(Vus2-deltas[10]),beta)
+    du[4] = -V2  -element(V2,afn2,deltas[6]) -element(Vs2,asp2,deltas[7]) +
+                -element(Vs2,asn2_with_inact,deltas[8]) -element(Vus2,ausp2,deltas[9]) +
+                synapse(Vs, asyn21, deltas[11], beta) +
+                Iapp2
+    du[5] = (1/tau_s)  * (V2 - Vs2)
+    du[6] = (1/tau_us) * (V2 - Vus2)
 end
 
 # Original, v observer.
