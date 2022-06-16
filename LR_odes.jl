@@ -316,6 +316,9 @@ function LR_observer_noinact!(du,u,p,t)
     Iapp = p[11]
     delta_ests = p[12] # Estimated deltas (for uncertain model)
     
+    α   = p[13]
+    γ   = p[14]
+    
     # Variables
     V = u[1]
     Vs = u[2]
