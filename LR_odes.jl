@@ -440,7 +440,7 @@ function LR_observer_II!(du,u,p,t)
     asyn12 = p[14]
 
     deltas = p[15] # [dfn1 dsp1 dsn1 dusp1 delta_h1 dfn2 ... dsyn21 dsyn12]
-    delta_mis = p[16]
+    delta_ests = p[16]
     beta = p[17]
     
     # Variables
@@ -489,11 +489,11 @@ function LR_observer_II!(du,u,p,t)
 
     ϕ̂ = [-element(V,1,delta_ests[1]) ...
         -element(Vsh,1,delta_ests[2]) ...
-        -element(Vsh,1,delta_ests[3])* sigmoid(-(Vus-deltas[5]),beta) ...
+        -element(Vsh,1,delta_ests[3])*sigmoid(-(Vush-delta_ests[5]),beta) ...
         -element(Vush,1,delta_ests[4]) ...
-        synapse(Vs2, 1, deltas[12], beta)]
+        synapse(Vs2h, 1, delta_ests[12], beta)]
 
-    du[7] = dot(ϕ̂,θ̂[13:17]) -V  + Iapp + 
+    du[7] = dot(ϕ̂,θ̂[1:5]) -V  + Iapp + 
             γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[8] = (1/tau_s) * (V - Vsh)
@@ -501,11 +501,11 @@ function LR_observer_II!(du,u,p,t)
 
     ϕ̂2 = [-element(V2,1,delta_ests[6]) ...
         -element(Vs2h,1,delta_ests[7]) ...
-        -element(Vs2h,1,delta_ests[8])* sigmoid(-(Vu2s-deltas[10]),beta) ...
+        -element(Vs2h,1,delta_ests[8])* sigmoid(-(Vus2h-delta_ests[10]),beta) ...
         -element(Vus2h,1,delta_ests[9]) ...
-        synapse(Vs, 1, deltas[11], beta)]
+        synapse(Vsh, 1, delta_ests[11], beta)]
 
-    du[10] = dot(ϕ̂2,θ̂[18:22]) -V2  + Iapp2 + 
+    du[10] = dot(ϕ̂2,θ̂[6:10]) -V2  + Iapp2 + 
             γ*(1+sum(P2.*Ψ2.^2))*(V2-V2h) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[11] = (1/tau_s) * (V2 - Vs2h)

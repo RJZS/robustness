@@ -90,22 +90,24 @@ plot!(solRef.t, solMis[1,:])
 
 
 # Now run the observer.
-Iappobs = -2;
+Iappo = -0.8;
+Iappo2 = -0.65;
 
-γ =0.01;
-α = 0.0001;
-Tfinal= 60000.0;
+γ =2;
+α = 0.001;
+Tfinal= 20000.0;
 tspan=(0.0,Tfinal);
 
-x0 = [-1.9 -1.9 -1.9];
-xh0 = [-1 -1 -1];
-θ̂₀ = [.1 .1 .1 .1];
-P₀ = [1 1 1 1];
-Ψ₀ = [0 0 0 0];
-u0 = [x0 xh0 θ̂₀ P₀ Ψ₀];
+x0 =  [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5];
+xh0 = [-1 -1 -1 -1.5 -1.5 -1.5];
+θ̂₀ = 0.1*ones(10)
+P₀ = ones(10);
+Ψ₀ = zeros(10);
+u0 = [x0 xh0 θ̂₀' P₀' Ψ₀'];
 
-p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iappobs,delta_ests);
-probObs = ODEProblem(LR_observer_noinact!,u0,tspan,p) # Simulation without noise (ODE)
+p=(afn,asp,asn,ausp,afn2,asp2,asn2,ausp2,tau_s,tau_us,Iappo,Iappo2,
+    asyn21,asyn12,delta_ests_true,delta_ests,beta);
+probObs = ODEProblem(LR_observer_II!,u0,tspan,p) # Simulation without noise (ODE)
 solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
 
 
@@ -116,20 +118,29 @@ plot(solObs.t[i:j], solObs[7,i:j])
 plot!(solObs.t[i:j], -solObs[8,i:j]) # Plotting the negative so can compare!
 
 # Learned parameters
-afnl = mean(solObs[7,j-10000:j]);
-aspl = mean(solObs[8,j-10000:j]);
-asnl = mean(solObs[9,j-10000:j]);
-auspl = mean(solObs[10,j-10000:j]);
+afnl = mean(solObs[13,j-10000:j]);
+aspl = mean(solObs[14,j-10000:j]);
+asnl = mean(solObs[15,j-10000:j]);
+auspl = mean(solObs[16,j-10000:j]);
+asyn12l = mean(solObs[17,j-10000:j]);
 
+afn2l = mean(solObs[18,j-10000:j]);
+asp2l = mean(solObs[19,j-10000:j]);
+asn2l = mean(solObs[20,j-10000:j]);
+ausp2l = mean(solObs[21,j-10000:j]);
+asyn21l = mean(solObs[22,j-10000:j]);
 
 # Finally, apply the learned parameters!
-x0 = [-1.5 -1.5 -1.5]
+x0 = [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5]
 u0 = x0
 Tfinal= Tfinalrel
 tspan=(0.0,Tfinal)
-p=(afnl,aspl,asnl,auspl,dfn,dsp,dsn,dusp,tau_s,tau_us,noise,delta_ests)
-probLearned = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
+p=(afnl,aspl,asnl,auspl,afn2l,asp2l,asn2l,ausp2l,tau_s,tau_us,noise,Iapp2,asyn21l,asyn12l,delta_ests,beta)
+probLearned = ODEProblem(LR_ODE_rel_II!,u0,tspan,p)  # Simulation without noise (ODE)
 solLearned = solve(probLearned,Euler(),adaptive=false,dt=dt)
 
-p2=plot(solRef.t, solRef[1,:])
+p3=plot(solRef.t, solRef[1,:])
 plot!(solLearned.t, solLearned[1,:])
+
+p4 = plot(solRef.t, solRef[4,:])
+plot!(solLearned.t, solLearned[4,:])

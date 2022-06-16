@@ -50,7 +50,8 @@ noise = noise .+ Iconst
 # plot(noise)
 
 save("LR_rel.jld","noise",noise,"mis",mis)
-# noise = load("LR_rel_noise.jld")["noise"]
+# noise = load("LR_rel.jld")["noise"]
+# mis = load("LR_rel.jld")["mis]
 
 # Simulation
 Tfinal= Tfinalrel
@@ -78,7 +79,7 @@ plot!(solRef.t, solMis[1,:])
 # Now run the observer.
 Iappobs = -2;
 
-γ =0.01;
+γ =2;
 α = 0.0001;
 Tfinal= 60000.0;
 tspan=(0.0,Tfinal);
