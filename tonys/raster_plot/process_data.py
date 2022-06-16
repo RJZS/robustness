@@ -10,7 +10,7 @@ mis_t_arr = data['mis_t_arr']
 t = data['t']; Ref = data['Ref']; Mis = data['Mis']; Learned = data['Learned'];
 thetalearned = data['thetalearned']
 
-num_trials = Mis.shape[0]
+num_trials = Mis.shape[1]
 def convert_to_timings(t, y, thresh=0):
     event_idxs = np.where(y>thresh)
     event_times = t[event_idxs]
@@ -22,9 +22,9 @@ PrelearnEvents     = []
 MisEvents     = [] # Not used.
 LearnedEvents = []
 for i in range(num_trials):
-    PrelearnEvents.append(convert_to_timings(t,Mis[i,:]))
-    MisEvents.append(convert_to_timings(t,Mis[i,:]))
-    LearnedEvents.append(convert_to_timings(t,Learned[i,:]))
+    PrelearnEvents.append(convert_to_timings(t,Mis[:,i]))
+    MisEvents.append(convert_to_timings(t,Mis[:,i]))
+    LearnedEvents.append(convert_to_timings(t,Learned[:,i]))
 
 PrelearnEvents.append(RefEvents)
 
