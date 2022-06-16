@@ -8,26 +8,26 @@ import pickle
 from numba import jit,njit,typeof
 from numba.typed import List as NumbaList
 
-num_trials = 2 # of a mismatch neuron.
+num_trials = 10 # of a mismatch neuron.
 
 dyns_array=[e_dyns] 
 
 mis_arr = np.zeros((12,2,num_trials)) # To save later.
 mis_t_arr = np.zeros((12,4,num_trials))
 for i in range(num_trials):# generate mismatch
-    mis_temp=(np.random.rand(12,2)*0.1-0.05)+1.0
+    mis_temp=(np.random.rand(12,2)*0.08-0.04)+1.0
     mis_temp2=(np.random.rand(12,4)*0.01-0.005)*2+1.0
     dyns_array.append(dyns(mis_temp,mis_temp2,True,True))
 
     mis_arr[:,:,i] = mis_temp
     mis_t_arr[:,:,i] = mis_temp2
     
-noise=(np.random.normal(size=200000))*60 #generate noise
+noise=(np.random.normal(size=200000))*10 #generate noise
 noise[0]=0
 for i in range(len(noise)-1): 
-    noise[i+1]=noise[i]*0.9999+noise[i+1]*(1-0.9999)
+    noise[i+1]=noise[i]+(noise[i+1]-noise[i])/1000
     
-noise=(noise-noise.mean())
+noise=(noise-noise.mean())*2
 plt.plot(noise[0:100000])
 print(noise.var())
 
