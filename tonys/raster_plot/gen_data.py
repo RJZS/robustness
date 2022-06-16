@@ -93,7 +93,7 @@ for (idx, dyn) in enumerate(dyns_array):
         t = sol.t
         Ref = sol.y[0]
     else:
-        Mis[:,idx] = sol.y[0]
+        Mis[:,idx-1] = sol.y[0]
     
 # Learn with diagonalised observer
 # set simulation time
@@ -142,12 +142,12 @@ for i in range(len(sol_OB_Par_array2)):
 
     # get initial condition 
     X0=cell1.init_cond(-0)
-    # set simulation time
-    T=np.linspace(0., Tfinal, 100000)
+
     # start simulation and the timer 
-    sol=solve_ivp(noisy_input_neuron, tspan,X0)
+    sol=solve_ivp(noisy_input_neuron, tspan,X0,t_eval=T)
     sol_OB_array2.append([sol.t,sol.y[0]])
-    Learned[:,i] = sol.y[0]
+    if i > 1: # Skip the first one, as that's the ref neuron.
+        Learned[:,i-1] = sol.y[0]
 
 np.savez("sec4_CB_burst.npz",noise=noise,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
                             t=t,Rel=Rel,Mis=Mis,Learned=Learned,thetalearned=sol_OB_Par_array2)
