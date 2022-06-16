@@ -65,7 +65,7 @@ T=np.linspace(0., Tfinal, 100000)
 
 # init params for saving
 lenT = len(T)
-t = np.zeros(lenT); Rel = np.zeros(lenT); Mis = np.zeros((lenT,num_trials))
+t = np.zeros(lenT); Ref = np.zeros(lenT); Mis = np.zeros((lenT,num_trials))
 Learned = np.zeros((lenT,num_trials))
 # Pre-learning simulations.
 print("PRE LEARNING")
@@ -89,7 +89,7 @@ for (idx, dyn) in enumerate(dyns_array):
     # start simulation
     sol=solve_ivp(noisy_input_neuron, tspan,X0,t_eval=T)
     sol_array.append([sol.t,sol.y[0]])
-    if idx == 1:
+    if idx == 0:
         t = sol.t
         Ref = sol.y[0]
     else:
@@ -146,7 +146,7 @@ for i in range(len(sol_OB_Par_array2)):
     # start simulation and the timer 
     sol=solve_ivp(noisy_input_neuron, tspan,X0,t_eval=T)
     sol_OB_array2.append([sol.t,sol.y[0]])
-    if i > 1: # Skip the first one, as that's the ref neuron.
+    if i > 0: # Skip the first one, as that's the ref neuron.
         Learned[:,i-1] = sol.y[0]
 
 np.savez("sec4_CB_burst.npz",noise=noise,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
