@@ -7,7 +7,7 @@ noise = data['noise']
 mis_arr = data['mis_arr']
 mis_t_arr = data['mis_t_arr']
 
-t = data['t']; Rel = data['Rel']; Mis = data['Mis']; Learned = data['Learned'];
+t = data['t']; Ref = data['Ref']; Mis = data['Mis']; Learned = data['Learned'];
 thetalearned = data['thetalearned']
 
 num_trials = Mis.shape[0]

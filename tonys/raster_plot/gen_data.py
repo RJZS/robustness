@@ -150,4 +150,4 @@ for i in range(len(sol_OB_Par_array2)):
         Learned[:,i-1] = sol.y[0]
 
 np.savez("sec4_CB_burst.npz",noise=noise,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
-                            t=t,Rel=Rel,Mis=Mis,Learned=Learned,thetalearned=sol_OB_Par_array2)
+                            t=t,Ref=Ref,Mis=Mis,Learned=Learned,thetalearned=sol_OB_Par_array2)
