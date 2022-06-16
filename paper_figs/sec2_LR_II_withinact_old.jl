@@ -55,7 +55,7 @@ tf3=10001 # Ending time of first pulse
 # Parameter vector for simulations
 p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,
     Iapp,I1,I2,ti1,tf1,ti2,tf2,afn2,asp2,asn2,ausp2,Iapp2,
-    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h)
+    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h,0,0,0)
 
 # Simulation
 # Using the calcium observer
@@ -97,4 +97,4 @@ l = @layout [
 
 CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
-savefig(CC,"sec2_LR_II.pdf")
+# savefig(CC,"sec2_LR_II.pdf")

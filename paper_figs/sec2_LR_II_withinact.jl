@@ -99,4 +99,4 @@ l = @layout [
 
 CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
-savefig(CC,"sec2_LR_II.pdf")
+# savefig(CC,"sec2_LR_II.pdf")
