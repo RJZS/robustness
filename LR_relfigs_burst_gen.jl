@@ -11,7 +11,7 @@ include("LR_odes.jl")
 
 num_trials = 5
 
-max_error = 0.1
+max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
 
 d = Normal(0,1)
 noise_sf = 12
@@ -96,12 +96,14 @@ for idx in 1:num_trials
 
     γ = 0.1;
     α = 0.0001;
+    # Tfinal= 65000.0; # Non-diag observer converges faster.
     Tfinal= 80000.0;
     tspan=(0.0,Tfinal);
 
     x0 = [-1.9 -1.9 -1.9];
     xh0 = [-1 -1 -1];
     θ̂₀ = [.1 .1 .1 .1];
+    # P₀ = [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]; # For non-diag observer.
     P₀ = [1 1 1 1];
     Ψ₀ = [0 0 0 0];
     u0 = [x0 xh0 θ̂₀ P₀ Ψ₀];

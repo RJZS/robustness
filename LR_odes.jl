@@ -298,6 +298,69 @@ function LR_ODE_rel_II!(du,u,p,t)
 end
 
 # Original, v observer.
+function LR_observer_noinact_nondiag!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+    # Input
+    Iapp = p[11]
+    delta_ests = p[12] # Estimated deltas (for uncertain model)
+    
+    α1   = p[13]
+    γ   = p[14]
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    # ODEs
+    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
+                -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
+                Iapp(t)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    # Adaptive Observer
+    Vh = u[4]
+    Vsh = u[5]
+    Vush = u[6]
+    θ̂= u[7:10]
+    P = reshape(u[10+1:10+16],4,4);    
+    P = (P+P')/2
+    # P = u[11:14]
+    Ψ = u[27:30]
+
+    t > 30000 ? α = 0 : α = α1
+
+    ϕ̂ = [-element(V,1,delta_ests[1]) ...
+        -element(Vsh,1,delta_ests[2]) ...
+        -element(Vsh,1,delta_ests[3]) ...
+        -element(Vush,1,delta_ests[4])]
+
+    du[4] = dot(ϕ̂,θ̂) -V  + Iapp(t) + γ*(1+Ψ'*P*Ψ)*(V-Vh)
+
+    du[5] = (1/tau_s) * (V - Vsh)
+    du[6] = (1/tau_us) * (V - Vush)
+    
+    du[7:10]= γ*P*Ψ*(V-Vh); # dθ̂ 
+    du[27:30] = -γ*Ψ + ϕ̂;  # dΨ
+    dP = α*P - γ*((P*Ψ)*(P*Ψ)');
+    dP = (dP+dP')/2;
+    du[10+1:10+16] = dP[:]
+end
+
+# Diagonalised version of v observer.
 function LR_observer_noinact!(du,u,p,t)
     # Gains
     afn = p[1]
