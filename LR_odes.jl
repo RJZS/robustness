@@ -316,7 +316,7 @@ function LR_observer_noinact!(du,u,p,t)
     Iapp = p[11]
     delta_ests = p[12] # Estimated deltas (for uncertain model)
     
-    α   = p[13]
+    α1   = p[13]
     γ   = p[14]
     
     # Variables
@@ -327,7 +327,7 @@ function LR_observer_noinact!(du,u,p,t)
     # ODEs
     du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
                 -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
-                Iapp
+                Iapp(t)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
@@ -341,12 +341,14 @@ function LR_observer_noinact!(du,u,p,t)
     P = u[11:14]
     Ψ = u[15:18]
 
+    t > 40000 ? α = 0 : α = α1
+
     ϕ̂ = [-element(V,1,delta_ests[1]) ...
         -element(Vsh,1,delta_ests[2]) ...
         -element(Vsh,1,delta_ests[3]) ...
         -element(Vush,1,delta_ests[4])]
 
-    du[4] = dot(ϕ̂,θ̂) -V  + Iapp + γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
+    du[4] = dot(ϕ̂,θ̂) -V  + Iapp(t) + γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[5] = (1/tau_s) * (V - Vsh)
     du[6] = (1/tau_us) * (V - Vush)

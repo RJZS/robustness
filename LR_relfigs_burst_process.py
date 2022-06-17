@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
-from tonys.sandbox import T
-
 fname = "sec4_LR_burst.jld"
 
 f = h5py.File(fname, "r")

@@ -9,7 +9,7 @@ using DifferentialEquations, LinearAlgebra, JLD
 include("LR_odes.jl")
 # Need to put a seed here?
 
-num_trials = 20
+num_trials = 5
 
 max_error = 0.1
 
@@ -92,11 +92,11 @@ for idx in 1:num_trials
 
 
     # Now run the observer.
-    Iappobs = -2;
+    Iappobs = t -> -2.6 + 0.4*sin(0.001*t)
 
-    γ = 2;
+    γ = 0.1;
     α = 0.0001;
-    Tfinal= 60000.0;
+    Tfinal= 80000.0;
     tspan=(0.0,Tfinal);
 
     x0 = [-1.9 -1.9 -1.9];
@@ -111,6 +111,11 @@ for idx in 1:num_trials
     probObs = ODEProblem(LR_observer_noinact!,u0,tspan,p) # Simulation without noise (ODE)
     solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
     println("Finished learning.")
+
+    # global plt0 = plot(solObs.t, solObs[1,:])
+    # global plt1 = plot(solObs.t, solObs[7,:])
+    # plot!(solObs.t, -solObs[8,:])
+    # global plt2 = plot(solObs.t, solObs[9,:])
 
     # Truncated figures
     j = size(solObs)[3]
