@@ -511,6 +511,9 @@ function LR_observer_II!(du,u,p,t)
     delta_ests = p[16]
     beta = p[17]
     
+    α1   = p[18]
+    γ   = p[19]
+
     # Variables
     V = u[1]
     Vs = u[2]
@@ -525,7 +528,7 @@ function LR_observer_II!(du,u,p,t)
     du[1] = -V  -element(V,afn,deltas[1]) -element(Vs,asp,deltas[2]) +
                 -element(Vs,asn_with_inact,deltas[3]) -element(Vus,ausp,deltas[4]) +
                 synapse(Vs2, asyn12, deltas[12], beta) +
-                Iapp
+                Iapp(t)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
@@ -555,13 +558,15 @@ function LR_observer_II!(du,u,p,t)
     Ψ = u[33:37]
     Ψ2 = u[38:42]
 
+    t > 30000 ? α = 0 : α = α1
+
     ϕ̂ = [-element(V,1,delta_ests[1]) ...
         -element(Vsh,1,delta_ests[2]) ...
         -element(Vsh,1,delta_ests[3])*sigmoid(-(Vush-delta_ests[5]),beta) ...
         -element(Vush,1,delta_ests[4]) ...
         synapse(Vs2h, 1, delta_ests[12], beta)]
 
-    du[7] = dot(ϕ̂,θ̂[1:5]) -V  + Iapp + 
+    du[7] = dot(ϕ̂,θ̂[1:5]) -V  + Iapp(t) + 
             γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
     du[8] = (1/tau_s) * (V - Vsh)

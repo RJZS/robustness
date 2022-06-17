@@ -9,7 +9,7 @@ using DifferentialEquations, LinearAlgebra, JLD
 include("LR_odes.jl")
 # Need to put a seed here?
 
-num_trials = 3
+num_trials = 5
 
 max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
 
@@ -107,14 +107,14 @@ for idx in 1:num_trials
 
 
     # Now run the observer.
-    # Iappobs = t -> -2.6 + 0.4*sin(0.001*t)
-    Iappo = -0.8;
+    Iappo = t -> -2 + 0.8*sin(0.001*t)
+    # Iappo = -0.8;
     Iappo2 = -0.65;
 
-    γ = 2;
+    γ = 0.5;
     α = 0.0001;
     # Tfinal= 65000.0; # Non-diag observer converges faster.
-    Tfinal= 20000.0;
+    Tfinal= 60000.0;
     tspan=(0.0,Tfinal);
 
     x0 =  [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5];
@@ -132,9 +132,11 @@ for idx in 1:num_trials
     println("Finished learning.")
 
     # global plt0 = plot(solObs.t, solObs[1,:])
-    # global plt1 = plot(solObs.t, solObs[7,:])
-    # plot!(solObs.t, -solObs[8,:])
-    # global plt2 = plot(solObs.t, solObs[9,:])
+    # plot!(solObs.t, solObs[4,:])
+    # global plt1 = plot(solObs.t, solObs[13,:])
+    # plot!(solObs.t, solObs[17,:])
+    # global plt2 = plot(solObs.t, solObs[14,:])
+    # plot!(solObs.t, solObs[18,:])
 
     # Truncated figures
     j = size(solObs)[3]

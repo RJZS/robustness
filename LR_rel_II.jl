@@ -90,7 +90,7 @@ plot!(solRef.t, solMis[1,:])
 
 
 # Now run the observer.
-Iappo = -0.8;
+Iappo = t -> -0.8;
 Iappo2 = -0.65;
 
 γ =2;
@@ -135,7 +135,7 @@ x0 = [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5]
 u0 = x0
 Tfinal= Tfinalrel
 tspan=(0.0,Tfinal)
-p=(afnl,aspl,asnl,auspl,afn2l,asp2l,asn2l,ausp2l,tau_s,tau_us,noise,Iapp2,asyn21l,asyn12l,delta_ests,beta)
+p=(afnl,aspl,asnl,auspl,afn2l,asp2l,asn2l,ausp2l,tau_s,tau_us,noise,Iapp2,asyn21l,asyn12l,delta_ests,beta,α,γ)
 probLearned = ODEProblem(LR_ODE_rel_II!,u0,tspan,p)  # Simulation without noise (ODE)
 solLearned = solve(probLearned,Euler(),adaptive=false,dt=dt)
 
