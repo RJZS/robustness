@@ -1195,7 +1195,7 @@ class neuron_diag:
         du18=self.mask*(-self.gamma*phi+PHI)
         #du14=(np.absolute(du14)>min_num)*du14
 
-        du19=self.alpha*P-np.multiply(np.square(P),np.square(phi))
+        du19=self.alpha*P-self.alpha*np.multiply(np.square(P),np.square(phi))
 
         du20=self.sys_equ(t,u_sys,V_pre,V_pre_E)
 

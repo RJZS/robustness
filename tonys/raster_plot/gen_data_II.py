@@ -8,19 +8,30 @@ import pickle
 from numba import jit,njit,typeof
 from numba.typed import List as NumbaList
 
-num_trials = 1 # of a mismatch neuron.
+num_trials = 4 # of a mismatch neuron.
 
 dyns_array2=[e_dyns] 
+dyns_array3=[e_dyns]
 
-mis_arr = np.zeros((12,2,num_trials)) # To save later.
-mis_t_arr = np.zeros((12,4,num_trials))
+mis_arr = np.zeros((2,12,2,num_trials)) # To save later.
+mis_t_arr = np.zeros((2,12,4,num_trials))
+# Neuron 1
 for i in range(num_trials):
     mis_temp=(np.random.rand(12,2)*0.02-0.01)+1.0
     mis_temp2=(np.random.rand(12,4)*0.01-0.005)*2+1.0
     dyns_array2.append(dyns(mis_temp,mis_temp2,True,True))
 
-    mis_arr[:,:,i] = mis_temp
-    mis_t_arr[:,:,i] = mis_temp2
+    mis_arr[0,:,:,i] = mis_temp
+    mis_t_arr[0,:,:,i] = mis_temp2
+
+# Neuron 2
+for i in range(num_trials):
+    mis_temp=(np.random.rand(12,2)*0.02-0.01)+1.0
+    mis_temp2=(np.random.rand(12,4)*0.01-0.005)*2+1.0
+    dyns_array3.append(dyns(mis_temp,mis_temp2,True,True))
+
+    mis_arr[1,:,:,i] = mis_temp
+    mis_t_arr[1,:,:,i] = mis_temp2
     
 noise2=(np.random.normal(size=200000))*60 #generate noise
 noise2[0]=0
@@ -77,10 +88,15 @@ for (idx, dyn) in enumerate(dyns_array2):
     cells=[]
     Ivec=[-1.4,-1.3]
     for i in range(2):
+            if i == 0: # To give each neuron in the HCO a different mismatch.
+                dyn_tmp = dyn
+            else:
+                dyn_tmp = dyns_array3[idx]
+
             cells.append(neuron(NumbaList(
                 [gCaT_gastr,gKd,gH,gNa,gA_gastr,gCaS_gastr,gKCa_gastr,C,gleak,KdCa,kc]
             ),
-                 dyn,dyn,ob_type='V'
+                 dyn_tmp,dyn_tmp,ob_type='V'
             ))# initialised cells in the STG network
             cells[i].set_input(NumbaList([Ivec[i],0,0,0,0,0,0,2,0,0]))
             cells[i].set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
@@ -117,13 +133,18 @@ Ivec=[-1.4,-1.3]
 gamma=10.
 alpha=0.001
 variable_mask1=np.array([0.,0.,1.,0.,0.,0.,0.,1.,0.])
-for dyn in dyns_array2:
+for (idx,dyn) in enumerate(dyns_array2):
+    print("Learning Trial: {}".format(idx))
     cells=[]
     for i in range(2):
+            if i == 0: # To give each neuron in the HCO a different mismatch.
+                dyn_tmp = dyn
+            else:
+                dyn_tmp = dyns_array3[idx]
             cells.append(neuron_diag(NumbaList(
                 [gCaT_gastr,gKd,gH,gNa,gA_gastr,gCaS_gastr,gKCa_gastr,C,gleak,KdCa,kc]
             ),
-                 e_dyns,dyn,
+                 e_dyns,dyn_tmp,
             ))# initialised cells in the STG network
             cells[i].set_input(NumbaList([Ivec[i],0,0,0,0,0,0,2,0,0]))
             cells[i].set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
@@ -179,10 +200,14 @@ for a in range(len(sol_OB_Par_HCO_array2)):
     Svec=[sol_OB_Par_HCO_array2[a][1],sol_OB_Par_HCO_array2[a][3]]
     Tvec=[sol_OB_Par_HCO_array2[a][0],sol_OB_Par_HCO_array2[a][2]]
     for i in range(2):
+            if i == 0: # To give each neuron in the HCO a different mismatch.
+                dyn_tmp = dyns_array2[a]
+            else:
+                dyn_tmp = dyns_array3[a]
             cells.append(neuron(NumbaList(
                 [Tvec[i],gKd,gH,gNa,gA_gastr,Svec[i],gKCa_gastr,C,gleak,KdCa,kc]
             ),
-                 dyns_array2[a],dyns_array2[a],ob_type='V'
+                 dyn_tmp,dyn_tmp,ob_type='V'
             ))# initialised cells in the STG network
             cells[i].set_input(NumbaList([Ivec[i],0,0,0,0,0,0,2,0,0]))
             cells[i].set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
@@ -205,5 +230,5 @@ for a in range(len(sol_OB_Par_HCO_array2)):
     if a > 0: # Skip the first one, as that's the ref neuron.
         Learned[:,:,a-1] = [sol.y[0],sol.y[16]]
 
-np.savez("sec4_CB_burst.npz",noise=noise2,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
+np.savez("sec4_CB_II.npz",noise=noise2,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
                             t=t,Ref=Ref,Mis=Mis,Learned=Learned,thetalearned=sol_OB_Par_HCO_array2)

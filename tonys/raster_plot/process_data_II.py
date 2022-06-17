@@ -10,7 +10,8 @@ mis_t_arr = data['mis_t_arr']
 t = data['t']; Ref = data['Ref']; Mis = data['Mis']; Learned = data['Learned'];
 thetalearned = data['thetalearned']
 
-num_trials = Mis.shape[1]
+num_trials = Mis.shape[2]
+
 def convert_to_timings(t, y, thresh=0):
     event_idxs = np.where(y>thresh)
     event_times = t[event_idxs]
@@ -56,5 +57,11 @@ l2 = ax.eventplot(LearnedEvents1, colors='g', linelengths=0.8)
 fig2, ax2 = plt.subplots(1,1)
 l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
 l2 = ax2.eventplot(LearnedEvents2, colors='g', linelengths=0.8)
+
+plt.figure()
+plt.eventplot([RefEvents1, RefEvents2])
+
+plt.figure()
+plt.plot(t,Mis[0,:,0], t, Mis[1,:,0])
 
 plt.show()

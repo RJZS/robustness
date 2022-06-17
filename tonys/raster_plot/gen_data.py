@@ -15,7 +15,7 @@ dyns_array=[e_dyns]
 mis_arr = np.zeros((12,2,num_trials)) # To save later.
 mis_t_arr = np.zeros((12,4,num_trials))
 for i in range(num_trials):# generate mismatch
-    mis_temp=(np.random.rand(12,2)*0.08-0.04)+1.0
+    mis_temp=(np.random.rand(12,2)*0.02-0.01)+1.0
     mis_temp2=(np.random.rand(12,4)*0.01-0.005)*2+1.0
     dyns_array.append(dyns(mis_temp,mis_temp2,True,True))
 
@@ -101,7 +101,7 @@ print("LEARNING")
 TfinalLearn=20000.0
 tspanLearn=[0.0,TfinalLearn]
 sol_OB_Par_array2=[]#learned parameters
-gamma=10.
+gamma=0.5
 alpha=0.001
 variable_mask1=np.array([0.,0.,1.,0.,0.,0.,0.,1.]) # no synape connections so only 8 parameters
 for dyn in dyns_array:
@@ -117,11 +117,14 @@ for dyn in dyns_array:
     cell1.set_hyp(gamma,alpha,variable_mask1)
     # get initial condition 
     X0=cell1.init_cond_OB(-60)
+    X0[cell1.pos_dinamics+2] = 1 # Initial estimate of gT
+    X0[cell1.pos_dinamics+7] = 1 # Initial estimate of gS
     # start simulation and the timer 
     sol=solve_ivp(cell1.OB_ODE_equ,tspanLearn , X0)#use Ca observer
     print('Estimated value')
     print(np.mean(sol.y[cell1.pos_dinamics+2][-1000:]))
     print(np.mean(sol.y[cell1.pos_dinamics+7][-1000:]))
+    # plt.figure();plt.plot(sol.t, sol.y[cell1.pos_dinamics+2][:]);plt.show()
     sol_OB_Par_array2.append([np.mean(sol.y[cell1.pos_dinamics+2][-1000:]),np.mean(sol.y[cell1.pos_dinamics+7][-1000:])])
 
 print("FINISHED LEARNING")
