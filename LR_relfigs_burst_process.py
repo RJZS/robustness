@@ -47,5 +47,5 @@ color_list.append('r') # Ref colour
 # plt.eventplot(MisEvents)
 fig, ax = plt.subplots(1,1)
 l1 = ax.eventplot(PrelearnEvents,colors=color_list)
-l2 = ax.eventplot(LearnedEvents, colors='g', linelengths=0.8)
+l2 = ax.eventplot(LearnedEvents, colors='g', linelengths=0.7)
 plt.show()
