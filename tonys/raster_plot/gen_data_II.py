@@ -8,7 +8,7 @@ import pickle
 from numba import jit,njit,typeof
 from numba.typed import List as NumbaList
 
-num_trials = 4 # of a mismatch neuron.
+num_trials = 6 # of a mismatch neuron.
 
 dyns_array2=[e_dyns] 
 dyns_array3=[e_dyns]
@@ -33,10 +33,10 @@ for i in range(num_trials):
     mis_arr[1,:,:,i] = mis_temp
     mis_t_arr[1,:,:,i] = mis_temp2
     
-noise2=(np.random.normal(size=200000))*60 #generate noise
+noise2=(np.random.normal(size=200000))*45 #generate noise
 noise2[0]=0
 for i in range(len(noise2)-1):
-    noise2[i+1]=noise2[i]*0.9999+noise2[i+1]*(1-0.9999)
+    noise2[i+1]=noise2[i]*0.9997+noise2[i+1]*(1-0.9997)
     
 noise2=(noise2-noise2.mean())
 plt.plot(noise2[0:100000])
@@ -72,7 +72,7 @@ def inti_cond_net_sys(net1):
     return result
 
 # set simulation time
-Tfinal=15000.0
+Tfinal=20000.0
 tspan=[0.0,Tfinal]
 T=np.linspace(0., Tfinal, 150000)
 
@@ -117,6 +117,7 @@ for (idx, dyn) in enumerate(dyns_array2):
     if idx == 0:
         t = sol.t
         Ref = [sol.y[0],sol.y[16]]
+        # plt.figure();plt.plot(t,sol.y[0],t,sol.y[16]);plt.show()
     else:
         Mis[:,:,idx-1] = [sol.y[0],sol.y[16]]
     
@@ -160,7 +161,7 @@ for (idx,dyn) in enumerate(dyns_array2):
     X0=[*net1.cells[0].init_cond_OB(-60+5),*net1.cells[1].init_cond_OB(-60-5)]
     
     # start simulation
-    sol=solve_ivp(net1.ob_equ,tspan , X0)
+    sol=solve_ivp(net1.ob_equ,tspanLearn , X0)
 
     print("Neur 2")
     net1.cells[0].set_input(NumbaList([Ivec[0],0,0,0,0,0,0,2,0,0]))
@@ -171,7 +172,7 @@ for (idx,dyn) in enumerate(dyns_array2):
     
     # start simulation and the timer 
     start = time.time()
-    sol_=solve_ivp(net1.ob_equ,tspan , X0)
+    sol_=solve_ivp(net1.ob_equ,tspanLearn , X0)
     end = time.time()
     print("Elapsed (with compilation) = %s" % (end - start))
 
