@@ -8,7 +8,7 @@ import pickle
 from numba import jit,njit,typeof
 from numba.typed import List as NumbaList
 
-num_trials = 10 # of a mismatch neuron.
+num_trials = 1 # of a mismatch neuron.
 
 dyns_array=[e_dyns] 
 
@@ -111,7 +111,8 @@ for dyn in dyns_array:
             ),
                  e_dyns,dyn,
             )
-    cell1.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]))
+    # cell1.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]))
+    cell1.set_input(NumbaList([0.,0,0,0,0,0,0,2,5,0.01]))
     cell1.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
     cell1.set_tau(tmKCa,1.,10.)
     cell1.set_hyp(gamma,alpha,variable_mask1)
@@ -124,6 +125,7 @@ for dyn in dyns_array:
     print('Estimated value')
     print(np.mean(sol.y[cell1.pos_dinamics+2][-1000:]))
     print(np.mean(sol.y[cell1.pos_dinamics+7][-1000:]))
+    plt.figure();plt.plot(sol.t,sol.y[0][:])
     # plt.figure();plt.plot(sol.t, sol.y[cell1.pos_dinamics+2][:]);plt.show()
     sol_OB_Par_array2.append([np.mean(sol.y[cell1.pos_dinamics+2][-1000:]),np.mean(sol.y[cell1.pos_dinamics+7][-1000:])])
 
@@ -154,3 +156,5 @@ for i in range(len(sol_OB_Par_array2)):
 
 np.savez("sec4_CB_burst.npz",noise=noise,mis_arr=mis_arr,mis_t_arr=mis_t_arr,
                             t=t,Ref=Ref,Mis=Mis,Learned=Learned,thetalearned=sol_OB_Par_array2)
+
+plt.show()
