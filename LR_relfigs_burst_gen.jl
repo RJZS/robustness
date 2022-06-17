@@ -9,7 +9,7 @@ using DifferentialEquations, LinearAlgebra, JLD
 include("LR_odes.jl")
 # Need to put a seed here?
 
-num_trials = 5
+num_trials = 8
 
 max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
 
@@ -94,10 +94,10 @@ for idx in 1:num_trials
     # Now run the observer.
     Iappobs = t -> -2.6 + 0.4*sin(0.001*t)
 
-    γ = 0.1;
+    γ = 2;
     α = 0.0001;
     # Tfinal= 65000.0; # Non-diag observer converges faster.
-    Tfinal= 80000.0;
+    Tfinal= 60000.0;
     tspan=(0.0,Tfinal);
 
     x0 = [-1.9 -1.9 -1.9];
