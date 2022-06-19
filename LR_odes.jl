@@ -15,6 +15,10 @@ function synapse(V, a, delta, beta)
     a * sigmoid(V-delta, beta)
 end
 
+## Stimulation function
+heaviside(t)=(1+sign(t))/2 # Unit step function
+pulse(t,ti,tf)=heaviside(t-ti)-heaviside(t-tf) # Pulse function
+
 function LR_ODE!(du,u,p,t)
     # Gains
     afn = p[1]
@@ -41,6 +45,10 @@ function LR_ODE!(du,u,p,t)
     ti2=p[16] # Starting time of second step input
     tf2=p[17] # Ending time of second step input
 
+    I3 = p[18]
+    ti3 = p[19]
+    tf3 = p[20]
+
     # Variables
     V = u[1]
     Vs = u[2]
@@ -49,7 +57,8 @@ function LR_ODE!(du,u,p,t)
     # ODEs
     du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
                 -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
-                Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2)
+                Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2) +
+                I3*pulse(t,ti3,tf3)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 end
@@ -177,6 +186,9 @@ function LR_II_ODE_with_inact!(du,u,p,t)
     I4 = p[30]
     ti4 = p[31]
     tf4 = p[32]
+    I5 = p[33]
+    ti5 = p[34]
+    tf5 = p[35]
 
     # Variables
     V = u[1]
@@ -200,7 +212,7 @@ function LR_II_ODE_with_inact!(du,u,p,t)
     du[4] = -V2  -element(V2,afn2,dfn) -element(Vs2,asp2,dsp) +
                 -element(Vs2,asn2_with_inact,dsn) -element(Vus2,ausp2,dusp) +
                 synapse(Vs, asyn21, deltasyn, beta) +
-                Iapp2 + I3*pulse(t,ti3,tf3) + I4*pulse(t,ti4,tf4)
+                Iapp2 + I3*pulse(t,ti3,tf3) + I4*pulse(t,ti4,tf4) + I5*pulse(t,ti5,tf5)
     du[5] = (1/tau_s)  * (V2 - Vs2)
     du[6] = (1/tau_us) * (V2 - Vus2)
 end

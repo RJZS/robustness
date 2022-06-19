@@ -47,17 +47,20 @@ ti2=9000 # Starting time of second pulse
 tf2=16001 # Ending time of first pulse
 
 Iapp2 = -2.5
-I3=0.3 # Amplitude of first pulse
-ti3=6000 # Starting time of first pulse
-tf3=7001 # Ending time of first pulse
-I4=0.3 # Amplitude of second pulse
+I3=0.1 # Amplitude of first pulse
+ti3=6100 # Starting time of first pulse
+tf3=6401 # Ending time of first pulse
+I4=0.2 # Amplitude of second pulse
 ti4=12000 # Starting time of second pulse
 tf4=18001 # Ending time of first pulse
+I5 = 0.08 # For subthreshold response
+ti5 = 4800
+tf5 = 5000
 
 # Parameter vector for simulations
 p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,
     Iapp,I1,I2,ti1,tf1,ti2,tf2,afn2,asp2,asn2,ausp2,Iapp2,
-    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h,I4,ti4,tf4)
+    asyn21,asyn12,deltasyn,I3,ti3,tf3,delta_h,I4,ti4,tf4,I5,ti5,tf5)
 
 # Simulation
 # Using the calcium observer
@@ -77,18 +80,18 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 plot!(sol.t, sol[4,:])
 ylabel!("V")
 
-p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+1620))
-plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+1620))
+p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+2620))
+plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti5-800,tf3+2620))
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
 p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5)
-plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4),linewidth=1.5)
+plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5)
 xlabel!("t")
 ylabel!("I_ext")
 
-p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti3-800,tf3+1620))
-plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4),linewidth=1.5,xlims=(ti3-800,tf3+1620))
+p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti5-800,tf3+2620))
+plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5,xlims=(ti5-800,tf3+2620))
 xlabel!("t")
 
 l = @layout [
@@ -99,4 +102,4 @@ l = @layout [
 
 CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
-# savefig(CC,"sec2_LR_II.pdf")
+savefig(CC,"sec2_LR_II.pdf")

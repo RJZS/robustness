@@ -29,14 +29,17 @@ Iapp = -2.6
 # Current pulses
 I1=0.2 # Amplitude of first pulse
 ti1=3000 # Starting time of first pulse
-tf1=3200 # Ending time of first pulse
+tf1=3100 # Ending time of first pulse
 I2=0.2 # Amplitude of second pulse
 ti2=8000 # Starting time of second pulse
 tf2=18001 # Ending time of first pulse
+I3 = 0.05 # Subthreshold input
+ti3 = 2600
+tf3 = 2700
 
 # Parameter vector for simulations
 p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,
-    Iapp,I1,I2,ti1,tf1,ti2,tf2)
+    Iapp,I1,I2,ti1,tf1,ti2,tf2,I3,ti3,tf3)
 
 # Simulation
 # Using the calcium observer
@@ -55,15 +58,15 @@ sol = solve(prob,dtmax=0.1)
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
-p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti1-50,tf1+320))
+p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-50,tf1+1250))
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
-p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=3)
+p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3)
 xlabel!("t")
 ylabel!("I_ext")
 
-p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=3,xlims=(ti1-50,tf1+320))
+p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3,xlims=(ti3-50,tf1+1250))
 xlabel!("t")
 
 l = @layout [
