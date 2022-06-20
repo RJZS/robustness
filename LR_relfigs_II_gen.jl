@@ -25,7 +25,8 @@ asp = 1.8
 asn =  -1.6
 ausp =  2
 
-# If you change these or other deltas, remember to change 'delta_ests'.
+# If you change these or other deltas, remember to change 'delta_ests',
+# as it's hardcoded !!
 dfn = 0
 dsp = 0
 dsn = -0.88
