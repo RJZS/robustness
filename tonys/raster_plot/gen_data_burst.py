@@ -8,7 +8,7 @@ import pickle
 from numba import jit,njit,typeof
 from numba.typed import List as NumbaList
 
-num_trials = 5 # of a mismatch neuron.
+num_trials = 8 # of a mismatch neuron.
 
 dyns_array=[e_dyns] 
 
