@@ -63,6 +63,51 @@ function LR_ODE!(du,u,p,t)
     du[3] = (1/tau_us) * (V - Vus)
 end
 
+# LR_ODE!, but the gains are time-varying.
+function LR_ODE_mod!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+
+    # Input
+    Iapp = p[11]
+    I1=p[12] # Amplitude of first step input
+    I2=p[13] # Amplitude of second step input
+    ti1=p[14] # Starting time of first step input
+    tf1=p[15] # Ending time of first step input
+    ti2=p[16] # Starting time of second step input
+    tf2=p[17] # Ending time of second step input
+
+    I3 = p[18]
+    ti3 = p[19]
+    tf3 = p[20]
+
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    # ODEs
+    du[1] = -V  -element(V,afn(t),dfn) -element(Vs,asp(t),dsp) +
+                -element(Vs,asn(t),dsn) -element(Vus,ausp(t),dusp) +
+                Iapp + I1*pulse(t,ti1,tf1) + I2*pulse(t,ti2,tf2) +
+                I3*pulse(t,ti3,tf3)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+end
+
 # Deprecated (no inact)
 function LR_II_ODE!(du,u,p,t)
     # Gains

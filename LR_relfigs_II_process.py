@@ -59,27 +59,24 @@ color_list.extend(repeat(mis_color,num_trials))
 color_list.append('tab:red') # Ref colour
 
 # plt.eventplot(MisEvents)
-fig, ax = plt.subplots(1,1)
-l1 = ax.eventplot(PrelearnEvents1,colors=color_list)
-l2 = ax.eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
+fig, axs = plt.subplots(1,2)
+l1 = axs[0].eventplot(PrelearnEvents1,colors=color_list)
+l2 = axs[0].eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
 
-fig2, ax2 = plt.subplots(1,1)
-l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
-l2 = ax2.eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
+l1 = axs[1].eventplot(PrelearnEvents2,colors=color_list)
+l2 = axs[1].eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
 
 # Example plot
 eg_sim = 2 # Which simulation to use for the example plot
-fig, axs = plt.subplots(1, 2, sharey=True)
-axs[0].plot(t, Ref[:,0], color='tab:red')
-axs[0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
-axs[1].plot(t, Ref[:,0], color='tab:red')
-axs[1].plot(t, Learned[eg_sim,:,0], color='tab:orange')
+fig, axs = plt.subplots(2, 2, sharey=True)
+axs[0][0].plot(t, Ref[:,0], color='tab:red')
+axs[0][0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
+axs[0][1].plot(t, Ref[:,0], color='tab:red')
+axs[0][1].plot(t, Learned[eg_sim,:,0], color='tab:orange')
 
-
-fig, axs = plt.subplots(1, 2, sharey=True)
-axs[0].plot(t, Ref[:,1], color='tab:red')
-axs[0].plot(t, Mis[eg_sim,:,1], color='tab:blue')
-axs[1].plot(t, Ref[:,1], color='tab:red')
-axs[1].plot(t, Learned[eg_sim,:,1], color='tab:orange')
+axs[1][0].plot(t, Ref[:,1], color='tab:red')
+axs[1][0].plot(t, Mis[eg_sim,:,1], color='tab:blue')
+axs[1][1].plot(t, Ref[:,1], color='tab:red')
+axs[1][1].plot(t, Learned[eg_sim,:,1], color='tab:orange')
 
 plt.show()
