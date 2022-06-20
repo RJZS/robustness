@@ -53,22 +53,22 @@ PrelearnEvents2.append(RefEvents2)
 
 # Colouring of plots
 from itertools import repeat
-mis_color = 'b'
+mis_color = 'tab:blue'
 color_list = []
 color_list.extend(repeat(mis_color,num_trials))
-color_list.append('r') # Ref colour
+color_list.append('tab:red') # Ref colour
 
 # plt.eventplot(MisEvents)
 fig, ax = plt.subplots(1,1)
 l1 = ax.eventplot(PrelearnEvents1,colors=color_list)
-l2 = ax.eventplot(LearnedEvents1, colors='g', linelengths=0.7)
+l2 = ax.eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
 
 fig2, ax2 = plt.subplots(1,1)
 l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
-l2 = ax2.eventplot(LearnedEvents2, colors='g', linelengths=0.7)
+l2 = ax2.eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
 
 # Example plot
-eg_sim = -2 # Which simulation to use for the example plot
+eg_sim = 2 # Which simulation to use for the example plot
 fig, axs = plt.subplots(1, 2, sharey=True)
 axs[0].plot(t, Ref[:,0], color='tab:red')
 axs[0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
