@@ -67,5 +67,19 @@ fig2, ax2 = plt.subplots(1,1)
 l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
 l2 = ax2.eventplot(LearnedEvents2, colors='g', linelengths=0.7)
 
-plt.figure(); plt.plot(t,Mis[0,:,0],t,Mis[0,:,1])
+# Example plot
+eg_sim = -2 # Which simulation to use for the example plot
+fig, axs = plt.subplots(1, 2, sharey=True)
+axs[0].plot(t, Ref[:,0], color='tab:red')
+axs[0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
+axs[1].plot(t, Ref[:,0], color='tab:red')
+axs[1].plot(t, Learned[eg_sim,:,0], color='tab:orange')
+
+
+fig, axs = plt.subplots(1, 2, sharey=True)
+axs[0].plot(t, Ref[:,1], color='tab:red')
+axs[0].plot(t, Mis[eg_sim,:,1], color='tab:blue')
+axs[1].plot(t, Ref[:,1], color='tab:red')
+axs[1].plot(t, Learned[eg_sim,:,1], color='tab:orange')
+
 plt.show()
