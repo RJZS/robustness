@@ -1,4 +1,4 @@
-using Plots
+using Plots, LaTeXStrings
 using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
@@ -86,6 +86,7 @@ sol = solve(prob,dtmax=0.1)
 # Voltage response
 p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 plot!(sol.t, sol[4,:])
+xticks!([0, 10000, 20000])
 ylabel!("V")
 
 p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+2620))
@@ -95,8 +96,9 @@ plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti5-800,tf3+2620))
 t=range(0.0,Tfinal,length=10000)
 p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5)
 plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5)
+xticks!([0, 10000, 20000])
 xlabel!("t")
-ylabel!("I_ext")
+ylabel!(L"i_{\rm{app}}")
 
 p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti5-800,tf3+2620))
 plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5,xlims=(ti5-800,tf3+2620))

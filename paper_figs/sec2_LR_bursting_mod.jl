@@ -1,4 +1,4 @@
-using Plots
+using Plots, LaTeXStrings
 using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
@@ -67,14 +67,18 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-50,tf1+1250))
+xticks!([3000, 3500, 4000])
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
 p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3)
+yticks!([-2.6, -2.5, -2.4])
 xlabel!("t")
-ylabel!("I_ext")
+ylabel!(L"i_{\rm{app}}")
 
 p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3,xlims=(ti3-50,tf1+1250))
+yticks!([-2.6, -2.5, -2.4])
+xticks!([3000, 3500, 4000])
 xlabel!("t")
 
 l = @layout [
