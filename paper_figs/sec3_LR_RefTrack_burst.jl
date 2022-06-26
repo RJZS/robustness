@@ -1,6 +1,6 @@
 # Reliability experiments on Luka's circuit
 
-using Plots
+using Plots, LaTeXStrings
 using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
@@ -55,14 +55,18 @@ V2 = sol[10,:];
 
 asn_est = sol[7,:];
 
-p1 = plot(t,V)
-plot!(t,V2)
+p1 = plot(t,V,label="Reference",legend=:bottomleft)
+plot!(t,V2,label="Controlled")
+ylabel!("V")
 
-p2 = plot(t,asn_mod)
-plot!(t, asn_est)
+p2 = plot(t,asn_mod,linewidth=2,label="True",legend=:bottomleft)
+plot!(t, asn_est,linewidth=1.5,label="Estimate")
+xlabel!("t")
+ylabel!(L"\alpha_s^-")
 
-CC = plot(p1, p2, layout = (2, 1), legend = false)
+CC = plot(p1, p2, layout = (2, 1))
 savefig(CC, "sec3_LR_bursting.pdf")
+CC
 # # Truncated figures
 # j = size(solObs)[3]
 # i = round(Int,1*j/5)

@@ -859,8 +859,10 @@ class neuron_diag:
     tauKCa:float
     taumCa:float
     taus:float
+
+    ob_type:str
     
-    def __init__(self,p:List[float],dyns,dyns2):
+    def __init__(self,p:List[float],dyns,dyns2,ob_type="Ca"):
         
         self.min_num=1e-70 
         self.Iapp=0. # Amplitude of constant applied current
@@ -910,7 +912,7 @@ class neuron_diag:
 #         PHI7= -mS**3*hS*(obesV-self.VCa)
         
         self.theta=np.array([self.gNa,self.gH,self.gT,self.gA,self.gKd,self.gLeak,self.gKCa,self.gS])
-        
+        self.ob_type = ob_type
         self.num()
         
     def set_rev(self,p):
@@ -1201,12 +1203,105 @@ class neuron_diag:
 
 
         return [*result, *du17 ,*du18,*du19.flatten(),*du20]
+
+    def OB_ODE_V(self,t,u,V_pre:np.ndarray,V_pre_E:np.ndarray):
+        
+        PHI8:float64[:]
+        PHI9:float64[:]
+
+        V,mNa,hNa,mH,mt,ht,mA,hA,mKd,mKCa,mS,hS,Ca,noise,_=u[0:15]
+    
+        #mSyn=[0.]
+        if self.syn_num>0:
+            mSyn = u[15:15+self.syn_num] # synapse
+    
+        u_sys=u[self.pos_p:self.pos_u_sys]
+        P=u[self.pos_phi:self.pos_p]
+        Theta=u[self.pos_dinamics:self.pos_Theta]
+        #print(Theta)
+        phi=u[self.pos_Theta:self.pos_phi]
+
+        obesV=u_sys[0]
+    
+        PHI0= -mNa**3*hNa*(obesV-self.VNa) 
+        PHI1= -mH*(obesV-self.VH)
+        PHI2= -mt**3*ht*(obesV-self.VCa)
+        PHI3= -mA**3*hA*(obesV-self.VK)
+        PHI4= - mKd**4*(obesV-self.VK)
+        PHI5= -(obesV-self.Vleak)
+        PHI6= -mKCa**4*(obesV-self.VK)
+        PHI7= -mS**3*hS*(obesV-self.VCa)
+        
+        PHI_=[PHI0,PHI1,PHI2,PHI3,PHI4,PHI5,PHI6,PHI7]
+        
+        if (self.syn_num>0) and (self.gE_num>0):
+            PHI8=-mSyn*(obesV-self.VSyn)
+            PHI9=-(obesV-V_pre_E)
+            PHI_=[*PHI_,*PHI8,*PHI9]
+        else:
+            if self.gE_num>0:
+                PHI9=-(obesV-V_pre_E)*self.C
+                PHI_=[*PHI_,*PHI9]
+            if self.syn_num>0:
+                PHI8=-mSyn*(obesV-self.VSyn)
+                PHI_=[*PHI_,*PHI8]
+        
+        PHI=np.array(PHI_)
+            
+        
+        Current_in= self.Iapp + self.I1*pulse(t,self.ti1,self.tf1) + self.I2*pulse(t,self.ti2,self.tf2)+ self.Ain*sin(2*pi*self.Win*t)
+
+
+        
+
+        #ODEs
+        temp=self.gamma*(obesV-V)+self.gamma*np.dot(np.square(phi),P)*(obesV-V)# Voltage equation
+        temp2=1/self.C*(np.dot(PHI,Theta) + Current_in)
+        du1=temp+temp2 # V
+       
+        du2=1/max_abs(self.dyns2.tau_mNa(obesV),self.min_num)*(-mNa+self.dyns2.mNa_inf(obesV)) # gating equation
+        du3=1/max_abs(self.dyns2.tau_hNa(obesV),self.min_num)*(-hNa+self.dyns2.hNa_inf(obesV))
+        du4=1/max_abs(self.dyns2.tau_mH(obesV),self.min_num)*(-mH+self.dyns2.mH_inf(obesV))
+        du5=1/max_abs(self.dyns2.tau_mt(obesV,self.taumCa),self.min_num)*(-mt+self.dyns2.mt_inf(obesV))
+        du6=1/max_abs(self.dyns2.tau_ht(obesV),self.min_num)*(-ht+self.dyns2.ht_inf(obesV))
+        du7=1/max_abs(self.dyns2.tau_mA(obesV),self.min_num)*(-mA+self.dyns2.mA_inf(obesV))
+        du8=1/max_abs(self.dyns2.tau_hA(obesV),self.min_num)*(-hA+self.dyns2.hA_inf(obesV))
+        du9=1/max_abs(self.dyns2.tau_mKd(obesV),self.min_num)*(-mKd+self.dyns2.mKd_inf(obesV))
+        du10=1/max_abs(self.dyns2.tau_mK(obesV,self.tauKCa),self.min_num)*(self.dyns2.mK_inf(obesV,Ca,self.KdCa) - mKCa)
+        du11=1/max_abs(self.dyns2.tau_mS(obesV,self.taumCa),self.min_num)*(self.dyns2.mS_inf(obesV) - mS)
+        du12=1/max_abs(self.dyns2.tau_hS(obesV),self.min_num)*(self.dyns2.hS_inf(obesV) - hS)
+        du13=-self.kc*(Theta[2]*mt**3*ht*(obesV-self.VCa) +Theta[7]*mS**3*hS*(obesV-self.VCa)) - Ca + 0.05# Variation of intracellular calcium concentration
+        
+        du14=-noise/self.taunoise
+        du15=0
+        
+        if self.syn_num>0:
+            #((1/taus)*(sinf(V,-50.,10.)-s))
+            du16=(1/self.taus)*(self.dyns2.mSyn_inf(V_pre)-mSyn)
+            result= [du1,du2,du3,du4,du5,du6,du7,du8,du9,du10,du11,du12,du13,du14,du15,*du16]
+        else:
+            result= [du1,du2,du3,du4,du5,du6,du7,du8,du9,du10,du11,du12,du13,du14,du15]
+        
+
+        du17=self.gamma_mask*np.multiply(P,phi)*(obesV-V)
+
+        du18=self.mask*(-self.gamma*phi+PHI)
+        #du14=(np.absolute(du14)>min_num)*du14
+
+        du19=self.alpha*P-self.alpha*np.multiply(np.square(P),np.square(phi))
+
+        du20=self.sys_equ(t,u_sys,V_pre,V_pre_E)
+
+
+        return [*result, *du17 ,*du18,*du19.flatten(),*du20]
     
     
     
     def OB_ODE_equ(self,t,u):
-        out= self.OB_ODE(t,u,np.array([0.]),np.array([0.]))
-
+        if self.ob_type=="Ca":
+            out= self.OB_ODE(t,u,np.array([0.]),np.array([0.]))
+        elif self.ob_type=="V":
+            out= self.OB_ODE_V(t,u,np.array([0.]),np.array([0.]))
         return (out)
 import copy
 class network:
