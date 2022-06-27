@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
-fname = "sec4_LR_II.jld"
+fname = "sec4_LR_II_paperversion.jld" # Changed this to paperversion !
 
 f = h5py.File(fname, "r")
 
@@ -29,9 +29,9 @@ def convert_to_timings(t, y, thresh=0):
 
 # Neuron 1 events
 RefEvents1 = convert_to_timings(t,Ref[:,0])
-PrelearnEvents1     = []
-MisEvents1     = [] # Not used.
-LearnedEvents1 = []
+PrelearnEvents1     = [[]] # The double brackets are to 1-index the trials, by including a blank one at 0.
+MisEvents1     = [[]] # Not used.
+LearnedEvents1 = [[]]
 for i in range(num_trials):
     PrelearnEvents1.append(convert_to_timings(t,Mis[i,:,0]))
     MisEvents1.append(convert_to_timings(t,Mis[i,:,0]))
@@ -41,9 +41,9 @@ PrelearnEvents1.append(RefEvents1)
 
 # Neuron 2 events
 RefEvents2 = convert_to_timings(t,Ref[:,1])
-PrelearnEvents2     = []
-MisEvents2     = [] # Not used.
-LearnedEvents2 = []
+PrelearnEvents2     = [[]]
+MisEvents2     = [[]] # Not used.
+LearnedEvents2 = [[]]
 for i in range(num_trials):
     PrelearnEvents2.append(convert_to_timings(t,Mis[i,:,1]))
     MisEvents2.append(convert_to_timings(t,Mis[i,:,1]))
@@ -55,16 +55,24 @@ PrelearnEvents2.append(RefEvents2)
 from itertools import repeat
 mis_color = 'tab:blue'
 color_list = []
-color_list.extend(repeat(mis_color,num_trials))
+color_list.extend(repeat(mis_color,num_trials+1))
 color_list.append('tab:red') # Ref colour
 
 # plt.eventplot(MisEvents)
 fig, axs = plt.subplots(1,2)
 l1 = axs[0].eventplot(PrelearnEvents1,colors=color_list)
 l2 = axs[0].eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
+axs[0].set_yticks([1,2,3,4])
+axs[0].set_ylabel("Trial")
+axs[0].set_xlabel("t")
+axs[0].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=5.8)
 
 l1 = axs[1].eventplot(PrelearnEvents2,colors=color_list)
 l2 = axs[1].eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
+axs[1].set_yticks([1,2,3,4])
+axs[1].set_xlabel("t")
+axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=5.8)
+plt.savefig("sec5_LR_II_raster.png")
 
 # Example plot
 eg_sim = 2 # Which simulation to use for the example plot
@@ -73,10 +81,15 @@ axs[0][0].plot(t, Ref[:,0], color='tab:red')
 axs[0][0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
 axs[0][1].plot(t, Ref[:,0], color='tab:red')
 axs[0][1].plot(t, Learned[eg_sim,:,0], color='tab:orange')
+axs[0][0].set_ylabel("V")
 
 axs[1][0].plot(t, Ref[:,1], color='tab:red')
 axs[1][0].plot(t, Mis[eg_sim,:,1], color='tab:blue')
 axs[1][1].plot(t, Ref[:,1], color='tab:red')
 axs[1][1].plot(t, Learned[eg_sim,:,1], color='tab:orange')
+axs[1][0].set_ylabel("V")
+axs[1][0].set_xlabel("t")
+axs[1][1].set_xlabel("t")
+plt.savefig("sec5_LR_II_example.png")
 
 plt.show()
