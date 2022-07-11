@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
-fname = "sec4_LR_II_paperversion.jld" # Changed this to paperversion !
+# fname = "sec4_LR_II_oldpaperversion.jld" # Version previously used in paper.
+fname = "sec4_LR_II_noinact.jld"
 
 f = h5py.File(fname, "r")
 
@@ -62,16 +63,16 @@ color_list.append('tab:red') # Ref colour
 fig, axs = plt.subplots(1,2)
 l1 = axs[0].eventplot(PrelearnEvents1,colors=color_list)
 l2 = axs[0].eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
-axs[0].set_yticks([1,2,3,4])
+axs[0].set_yticks(np.arange(num_trials))
 axs[0].set_ylabel("Trial")
 axs[0].set_xlabel("t")
-axs[0].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=5.8)
+axs[0].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
 
 l1 = axs[1].eventplot(PrelearnEvents2,colors=color_list)
 l2 = axs[1].eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
-axs[1].set_yticks([1,2,3,4])
+axs[1].set_yticks(np.arange(num_trials))
 axs[1].set_xlabel("t")
-axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=5.8)
+axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
 plt.savefig("sec5_LR_II_raster.png")
 
 # Example plot

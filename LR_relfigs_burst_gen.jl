@@ -12,6 +12,7 @@ include("LR_odes.jl")
 num_trials = 8
 
 max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
+max_tau_error = 0.04
 
 d = Normal(0,1)
 noise_sf = 12
@@ -53,6 +54,7 @@ noise = noise .+ Iconst
 
 # Initialise arrays which will later be saved as .jld files.
 delta_est_values = zeros(4,num_trials)
+tau_est_values = zeros(2,num_trials)
 
 Ref = zeros(Int(Tfinalrel/dt+2))
 Mis = zeros(Int(Tfinalrel/dt+2),num_trials)
@@ -74,15 +76,20 @@ Ref = solRef[1,:]
 for idx in 1:num_trials
     println("Trial Number: $idx")
     mis = (rand(Uniform(0,max_error),4).-max_error/2).+1
+    mis_tau = (rand(Uniform(0,max_tau_error),2).-max_tau_error/2).+1
     delta_ests = [0.01,0.01,-1.5,-1.5].*mis
+    tau_ests = [tau_s, tau_us].*mis_tau
+    println(tau_ests)
+
     global delta_est_values[:,idx] = delta_ests
+    global tau_est_values[:,idx] = tau_ests
 
     # Simulate the mismatch neuron, before learning.
     Tfinal= Tfinalrel
     tspan=(0.0,Tfinal)
     x0 = [-1.5 -1.5 -1.5]
     u0 = x0
-    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,noise,delta_ests)
+    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],noise,delta_ests)
     probMis = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
     solMis = solve(probMis,Euler(),adaptive=false,dt=dt)
     global Mis[:,idx] = solMis[1,:]
@@ -109,7 +116,7 @@ for idx in 1:num_trials
     u0 = [x0 xh0 θ̂₀ P₀ Ψ₀];
 
     println("Learning...")
-    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iappobs,delta_ests,α,γ);
+    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iappobs,delta_ests,α,γ,tau_ests);
     probObs = ODEProblem(LR_observer_noinact!,u0,tspan,p) # Simulation without noise (ODE)
     solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
     println("Finished learning.")
@@ -138,7 +145,7 @@ for idx in 1:num_trials
     u0 = x0
     Tfinal= Tfinalrel
     tspan=(0.0,Tfinal)
-    p=(afnl,aspl,asnl,auspl,dfn,dsp,dsn,dusp,tau_s,tau_us,noise,delta_ests)
+    p=(afnl,aspl,asnl,auspl,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],noise,delta_ests)
     probLearned = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
     solLearned = solve(probLearned,Euler(),adaptive=false,dt=dt)
     global Learned[:,idx] = solLearned[1,:]
@@ -148,5 +155,6 @@ for idx in 1:num_trials
 end
 
 save("sec4_LR_burst.jld","noise",noise,
-    "delta_est_values",delta_est_values,"thetalearned",thetalearned,
+    "delta_est_values",delta_est_values,"tau_est_values",tau_est_values,
+    "thetalearned",thetalearned,
     "t",t,"Ref",Ref,"Mis",Mis,"Learned",Learned)

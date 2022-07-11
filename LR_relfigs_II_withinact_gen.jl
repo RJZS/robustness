@@ -11,31 +11,32 @@ include("LR_odes.jl")
 
 num_trials = 4
 
-max_error = 0.07 # 0.1 gives a mismatch of up to +/- 5%
+max_error = 0.08 # 0.1 gives a mismatch of up to +/- 5%
 max_tau_error = 0.02
 
 d = Normal(0,1)
-noise_sf = 20
+noise_sf = 10
 
 ## Definition of parameters
 tau_s = 50
 tau_us = 50*50
 
-afn = -2
-asp = 2
-asn =  -1.5
-ausp =  1.5
+afn = -1.8
+asp = 1.8
+asn =  -1.6
+ausp =  2
 
-# If you change these or other deltas, remember to change 'delta_ests'.
+# If you change these or other deltas, remember to change 'delta_ests',
+# as it's hardcoded !!
 dfn = 0
 dsp = 0
 dsn = -0.88
-dusp = -0.88
+dusp = 0
 
 afn2 = -2
 asp2 = 2
-asn2 =  -1.7
-ausp2 =  1.5
+asn2 =  -1.6
+ausp2 =  2
 
 asyn21 = -0.2
 asyn12 = -0.2
@@ -47,13 +48,12 @@ beta = 2
 # If you change this, make sure to also change 'delta_ests'
 delta_ests_true = [dfn,dsp,dsn,dusp,delta_h,dfn,dsp,dsn,dusp,delta_h,deltasyn,deltasyn]
 
-
 Tfinalrel = 20000;
 dt = 0.1;
 
 # Noise-generated current
 noise = rand(d, round(Int, Tfinalrel/dt+1))*noise_sf;
-Iconst = -2;
+Iconst = -2.6;
 
 for i in eachindex(noise)
     i == 1 ? noise[i] = 0 : noise[i]=noise[i-1]+(noise[i]-noise[i-1])/2000
@@ -71,7 +71,7 @@ end
 # noise = fnoise .+ Iconst;
 noise = noise .+ Iconst;
 
-Iapp2 = -0.65;
+Iapp2 = -2.2;
 
 # Initialise arrays which will later be saved as .jld files.
 delta_est_values = zeros(12,num_trials);
@@ -95,19 +95,20 @@ t = solRef.t;
 Ref[1,:] = solRef[1,:];
 Ref[2,:] = solRef[4,:];
 
-
-p1=plot(t, Ref[1,:])
+# p1=plot(t, Ref[1,:])
+# p2=plot(t, Ref[2,:])
 
 for idx in 1:num_trials
     println("Trial Number: $idx")
     mis = (rand(Uniform(0,max_error),12).-max_error/2).+1
     mis_tau = (rand(Uniform(0,max_tau_error),4).-max_tau_error/2).+1
-    delta_ests = [0.01,-0.01,-0.88,-0.88,-0.5,-0.01,0.01,-0.88,-0.88,-0.5,-1,-1].*mis
+    delta_ests = [0.01,-0.01,-0.88,0.01,-0.5,-0.01,0.01,-0.88,0.01,-0.5,-1,-1].*mis
     tau_ests = [tau_s, tau_us, tau_s, tau_us].*mis_tau
 
     global delta_est_values[:,idx] = delta_ests
     global tau_est_values[:,idx] = tau_ests
     println(tau_ests)
+
 
     # Simulate the mismatch neuron, before learning.
     Tfinal= Tfinalrel
@@ -126,9 +127,9 @@ for idx in 1:num_trials
 
 
     # Now run the observer.
-    Iappo = t -> -2 + 0.8*sin(0.001*t);
+    Iappo = t -> -2.6 + 0.2*sin(0.001*t);
     # Iappo = -0.8;
-    Iappo2 = -0.65;
+    Iappo2 = -2.2;
 
     γ = 0.5;
     α = 0.0001;
@@ -147,6 +148,7 @@ for idx in 1:num_trials
     p=(afn,asp,asn,ausp,afn2,asp2,asn2,ausp2,tau_s,tau_us,Iappo,Iappo2,
         asyn21,asyn12,delta_ests_true,delta_ests,beta,α,γ,tau_ests);
     probObs = ODEProblem(LR_observer_II!,u0,tspan,p) # Simulation without noise (ODE)
+    # global solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
     solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
     println("Finished learning.")
 
@@ -194,7 +196,7 @@ for idx in 1:num_trials
     # plot!(solLearned.t, solLearned[1,:])
 end
 
-save("sec4_LR_II_tautest.jld","noise",noise,
+save("sec4_LR_II_withinact.jld","noise",noise,
     "delta_est_values",delta_est_values,"tau_est_values",tau_est_values,
     "thetalearned",thetalearned,
     "t",t,"Ref",Ref,"Mis",Mis,"Learned",Learned)
