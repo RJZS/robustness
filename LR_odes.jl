@@ -946,12 +946,15 @@ function LR_observer_II_noinact!(du,u,p,t)
     # P = reshape(u[28+1:28+4],2,2);    
     # P = (P+P')/2
 
-    P = u[23:27]
-    P2 = u[28:32]
-    Ψ = u[33:37]
-    Ψ2 = u[38:42]
+    P = u[23:29]
+    Pmat = reshape(P[2:5], 2, 2) # For asn and asp.
+    P2 = u[30:36]
+    P2mat = reshape(P2[2:5], 2, 2)
+    Ψ = u[37:41]
+    Ψ2 = u[42:46]
 
-    t > 30000 ? α = 0 : α = α1
+    # t > 30000 ? α = 0 : α = α1
+    t > 30000 ? α = α1 : α = α1
 
     ϕ̂ = [-element(V,1,delta_ests[1]) ...
         -element(Vsh,1,delta_ests[2]) ...
@@ -959,8 +962,10 @@ function LR_observer_II_noinact!(du,u,p,t)
         -element(Vush,1,delta_ests[4]) ...
         synapse(Vs2h, 1, delta_ests[12], beta)]
 
-    du[7] = dot(ϕ̂,θ̂[1:5]) -V  + Iapp(t) + 
-            γ*(1+sum(P.*Ψ.^2))*(V-Vh) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
+    du[7] = dot(ϕ̂,θ̂[1:5]) -V  + Iapp(t) +
+            γ*(1 + P[1]*Ψ[1]^2 + Ψ[2:3]'*Pmat*Ψ[2:3] + 
+            P[6]*Ψ[4]^2 + P[7]*Ψ[5]^2) * (V-Vh)
+            # γ*(1+sum(P.*Ψ.^2)) * (V-Vh)
 
     du[8] = (1/tau_ests[1]) * (V - Vsh)
     du[9] = (1/tau_ests[2]) * (V - Vush)
@@ -972,21 +977,40 @@ function LR_observer_II_noinact!(du,u,p,t)
         synapse(Vsh, 1, delta_ests[11], beta)]
 
     du[10] = dot(ϕ̂2,θ̂[6:10]) -V2  + Iapp2 + 
-            γ*(1+sum(P2.*Ψ2.^2))*(V2-V2h) # γ*(1+Ψ'*P*Ψ)*(V-Vh)
+            γ*(1 + P2[1]*Ψ2[1]^2 + Ψ2[2:3]'*P2mat*Ψ2[2:3] + 
+            P2[6]*Ψ2[4]^2 + P2[7]*Ψ2[5]^2) * (V2-V2h)
+            # γ*(1+sum(P2.*Ψ2.^2))*(V2-V2h)
 
     du[11] = (1/tau_ests[3]) * (V2 - Vs2h)
     du[12] = (1/tau_ests[4]) * (V2 - Vus2h)
     
-    du[13:17]= γ*P.*Ψ*(V-Vh); # dθ̂  (neuron 1)
-    du[18:22]= γ*P2.*Ψ2*(V2-V2h); # dθ̂  (neuron 2)
+    du[13]= γ*P[1]*Ψ[1]*(V-Vh); # dθ̂  (neuron 1)
+    du[14:15]= γ*Pmat*Ψ[2:3]*(V-Vh); # dθ̂  (neuron 1)
+    du[16]= γ*P[6]*Ψ[4]*(V-Vh); # dθ̂  (neuron 1)
+    du[17]= γ*P[7]*Ψ[5]*(V-Vh); # dθ̂  (neuron 1)
+    
+    du[18]= γ*P2[1]*Ψ2[1]*(V2-V2h); # dθ̂  (neuron 2)
+    du[19:20]= γ*P2mat*Ψ2[2:3]*(V2-V2h); # dθ̂  (neuron 2)
+    du[21]= γ*P2[6]*Ψ2[4]*(V2-V2h); # dθ̂  (neuron 2)
+    du[22]= γ*P2[7]*Ψ2[5]*(V2-V2h); # dθ̂  (neuron 2)
 
-    du[33:37] = -γ*Ψ + ϕ̂;  # dΨ1
-    du[38:42] = -γ*Ψ2 + ϕ̂2;  # dΨ2
+    du[37:41] = -γ*Ψ + ϕ̂;  # dΨ1
+    du[42:46] = -γ*Ψ2 + ϕ̂2;  # dΨ2
 
-    du[23:27] = α*P - α*P.^2 .* Ψ.^2; # ((P*Ψ)*(P*Ψ)'); Neuron 1
-    du[28:32] = α*P2 - α*P2.^2 .* Ψ2.^2; # ((P*Ψ)*(P*Ψ)'); Neuron 2
-    # dP = (dP+dP')/2;
-    # du[8] = dP[:]
+    du[23] = α*P[1] - α*P[1]^2 * Ψ[1]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 1
+    dPmat = α*Pmat - α*Pmat * Ψ[2:3] * Ψ[2:3]' * Pmat; # ((P*Ψ)*(P*Ψ)'); Neuron 1
+    du[28] = α*P[6] - α*P[6]^2 * Ψ[4]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 1
+    du[29] = α*P[7] - α*P[7]^2 * Ψ[5]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 1
+    
+    du[30] = α*P2[1] - α*P2[1]^2 * Ψ2[1]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 2
+    dP2mat = α*P2mat - α*P2mat * Ψ2[2:3] * Ψ2[2:3]' * P2mat;
+    du[35] = α*P2[6] - α*P2[6]^2 * Ψ2[4]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 2
+    du[36] = α*P2[7] - α*P2[7]^2 * Ψ2[5]^2; # ((P*Ψ)*(P*Ψ)'); Neuron 2
+
+    dPmat = (dPmat+dPmat')/2;
+    dP2mat = (dP2mat+dP2mat')/2;
+    du[24:27] = dPmat[:]
+    du[31:34] = dP2mat[:]
 end
 
 function LR_observer_II_noinact_nondiag!(du,u,p,t)
