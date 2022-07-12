@@ -1,9 +1,12 @@
 # Reliability experiments on Luka's circuit
 
-using Plots, LaTeXStrings
+using Plots, LaTeXStrings, Random, Distributions
 using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
+
+max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
+max_tau_error = 0.02 # 0.02
 
 # Modulation fn
 function asn_mod(t)
@@ -34,11 +37,16 @@ asn2 = -0.5
 
 γ =2;
 α = 0.0001;
-Tfinal= 30000.0;
+Tfinal= 30500.0;
 tspan=(0.0,Tfinal);
 dt=0.1;
 
 Iapp = -0.6;
+
+mis = (rand(Uniform(0,max_error),4).-max_error/2).+1
+mis_tau = (rand(Uniform(0,max_tau_error),2).-max_tau_error/2).+1
+delta_ests = [0.01,-0.01,-1.5,-1.5].*mis
+tau_ests = [tau_s, tau_us].*mis_tau
 
 x0 = -0.98*[1 1 1];
 xh0 = [-1 -1 -1];
@@ -48,8 +56,8 @@ P₀ = 1;
 x02 = -1*[1 1 1];
 u0 = [x0 xh0 θ̂₀ P₀ Ψ₀ x02];
 
-p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp,α,γ,asn2);
-prob = ODEProblem(LR_observer_RefTrack!,u0,tspan,p) # Simulation without noise (ODE)
+p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp,α,γ,asn2,delta_ests,tau_ests);
+prob = ODEProblem(LR_observer_RefTrack_mis!,u0,tspan,p) # Simulation without noise (ODE)
 sol = solve(prob,Euler(),adaptive=false,dt=dt)
 
 t = sol.t;
@@ -68,7 +76,7 @@ xlabel!("t")
 ylabel!(L"\alpha_s^-")
 
 CC = plot(p1, p2, layout = (2, 1))
-savefig(CC, "sec3_LR_bursting.pdf")
+savefig(CC, "sec3_LR_bursting_mis.pdf")
 CC
 # # Truncated figures
 # j = size(solObs)[3]
