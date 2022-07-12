@@ -1179,3 +1179,76 @@ function LR_observer_RefTrack!(du,u,p,t)
     du[9] = -γ*Ψ + ϕ̂;  # dΨ
     du[8] = α*P - α*P.^2 .* Ψ.^2;
 end
+
+# As above, but with mismatch.
+function LR_observer_RefTrack_mis!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+    # Input
+    Iapp = p[11]
+    
+    α   = p[12]
+    γ   = p[13]
+
+    asn2 = p[14]
+
+    # Mismatch parameters
+    delta_ests = p[15]
+    tau_ests = p[16]
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+    V2 = u[10]
+    Vs2 = u[11]
+    Vus2 = u[12]
+
+    # Need this for the controller.
+    θ̂= u[7]
+
+    # ODEs. Reference neuron, then plant
+    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
+                -element(Vs,asn(t),dsn) -element(Vus,ausp,dusp) +
+                Iapp
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    du[10] = -V2  -element(V2,afn,dfn) -element(Vs2,asp,dsp) +
+        -element(Vs2,asn2,dsn) -element(Vus2,ausp,dusp) + Iapp +
+        -element(Vs2,θ̂-asn2,dsn) # Control current
+    du[11] = (1/tau_s)  * (V2 - Vs2)
+    du[12] = (1/tau_us) * (V2 - Vus2)
+
+    # Adaptive Observer
+    Vh = u[4]
+    Vsh = u[5]
+    Vush = u[6]
+    # P = reshape(u[28+1:28+4],2,2);    
+    # P = (P+P')/2
+    P = u[8]
+    Ψ = u[9]
+
+    ϕ̂ = -element(Vsh,1,delta_ests[3])
+
+    du[4] = ϕ̂*θ̂ - V  -element(V,afn,delta_ests[1]) -element(Vsh,asp,delta_ests[2]) +
+            -element(Vush,ausp,delta_ests[4]) + Iapp + γ*(1+sum(P.*Ψ.^2))*(V-Vh)
+
+    du[5] = (1/tau_ests[1]) * (V - Vsh)
+    du[6] = (1/tau_ests[2]) * (V - Vush)
+    
+    du[7]= t > 25000 ? 0 : γ*P.*Ψ*(V-Vh); # dθ̂ 
+    du[9] = -γ*Ψ + ϕ̂;  # dΨ
+    du[8] = α*P - α*P.^2 .* Ψ.^2;
+end
