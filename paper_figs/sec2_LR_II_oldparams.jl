@@ -15,39 +15,39 @@ ausp =  1.5
 
 dfn = 0
 dsp = 0
-dsn = -0.9
-dusp = -2.8 # -0.88
+dsn = -0.88
+dusp = -0.88
 
 afn2 = -2
 asp2 = 2
 asn2 =  -1.5
 ausp2 =  1.5
 
-asyn21 = -2 # -0.4
-asyn12 = -2 # -0.1
+asyn21 = -0.4
+asyn12 = -0.1
 
 deltasyn = -1
 
 # Initial conditions
-x0 = [-2 -2 -2]
-x02 = [-2 -2 -2]
+x0 = [-1.6 -1.6 -1.6]
+x02 = [-1.6 -1.6 -1.6]
 u0 = [x0 x02]
 
-Tfinal= 18000.0
+Tfinal= 10000.0
 tspan=(0.0,Tfinal)
 
-Iapp = 0.2
+Iapp = -1.6
 # Current pulses
-I1=0.2 # Amplitude of first pulse
-ti1=1800 # Starting time of first pulse
-tf1=2500 # Ending time of first pulse
-I2=-0.5 # Amplitude of second pulse
-ti2=6000 # Starting time of second pulse
-tf2=8001 # Ending time of first pulse
+I1=0.3 # Amplitude of first pulse
+ti1=3000 # Starting time of first pulse
+tf1=10001 # Ending time of first pulse
+I2=0. # Amplitude of second pulse
+ti2=8000 # Starting time of second pulse
+tf2=18001 # Ending time of first pulse
 
-Iapp2 = 0.2
-I3=0.#6 # Amplitude of first pulse
-ti3=6000 # Starting time of first pulse
+Iapp2 = -1.6
+I3=0.6 # Amplitude of first pulse
+ti3=4000 # Starting time of first pulse
 tf3=10001 # Ending time of first pulse
 
 # Parameter vector for simulations

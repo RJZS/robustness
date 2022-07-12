@@ -6,9 +6,9 @@ include("../LR_odes.jl")
 # Modulation fn
 function asn2_mod(t)
     if t < 11000
-        -1.6
+        -1.5
     else
-        -1.6 +(t-11000)/18000
+        -1.5 +(t-11000)/18000
     end
 end
 
@@ -18,50 +18,50 @@ tau_us = 50*50
 
 afn = t -> -2
 asp = t -> 2
-asn =  t -> -1.6
-ausp =  t -> 2
+asn =  t -> -1.5
+ausp =  t -> 1.5
 
 dfn = 0
 dsp = 0
-dsn = -0.88
-dusp = 0
+dsn = -0.9
+dusp = -2.8
 
 afn2 = t -> -2
 asp2 = t -> 2
 asn2 =  t -> asn2_mod(t)
-ausp2 =  t -> 2
+ausp2 =  t -> 1.5
 
-asyn21 = t -> 0 # -0.2
-asyn12 = t -> 0 # -0.2
+asyn21 = t -> -2 # -0.2
+asyn12 = t -> -2 # -0.2
 
 deltasyn = -1
 delta_h = -0.5
 
 # Initial conditions
-x0 = [-0.2 -0.2 -0.2]
-x02 = [0 0 0]
+x0 = [-2 -2 -2]
+x02 = [-2 -2 -2]
 u0 = [x0 x02]
 
-Tfinal= 26000.0
+Tfinal= 20000.0
 tspan=(0.0,Tfinal)
 
-Iapp = -2.2 # -0.8
+Iapp = 0.2 # -0.8
 # Current pulses
-I1=0 # Amplitude of first pulse
-ti1=4500 # Starting time of first pulse
-tf1=6000 # Ending time of first pulse
-I2=0 # Amplitude of second pulse
-ti2=9000 # Starting time of second pulse
-tf2=16001 # Ending time of first pulse
+I1=0.2 # Amplitude of first pulse
+ti1=1800 # Starting time of first pulse
+tf1=2500 # Ending time of first pulse
+I2=-0.5 # Amplitude of second pulse
+ti2=6000 # Starting time of second pulse
+tf2=8001 # Ending time of first pulse
 
-Iapp2 = -2.5
-I3=0.1 # Amplitude of first pulse
-ti3=6100 # Starting time of first pulse
-tf3=6401 # Ending time of first pulse
-I4=0.2 # Amplitude of second pulse
+Iapp2 = 0.2
+I3=0.#6 # Amplitude of first pulse
+ti3=6000 # Starting time of first pulse
+tf3=10001 # Ending time of first pulse
+I4=0#.2 # Amplitude of second pulse
 ti4=11000 # Starting time of second pulse
 tf4=26001 # Ending time of first pulse
-I5 = 0.08 # For subthreshold response
+I5 = 0#.08 # For subthreshold response
 ti5 = 4800
 tf5 = 5000
 
@@ -89,8 +89,8 @@ plot!(sol.t, sol[4,:])
 xticks!([0, 10000, 20000])
 ylabel!("V")
 
-p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-800,tf3+2620))
-plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti5-800,tf3+2620))
+p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-600,tf3+2500))
+plot!(sol.t, sol[4,:],linewidth=1.5,legend=false,xlims=(ti5-600,tf3+2500))
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
@@ -100,8 +100,8 @@ xticks!([0, 10000, 20000])
 xlabel!("t")
 ylabel!(L"i_{\rm{app}}")
 
-p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti5-800,tf3+2620))
-plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5,xlims=(ti5-800,tf3+2620))
+p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2),linewidth=1.5,xlims=(ti5-600,tf3+2500))
+plot!(t,Iapp2 .+I3*pulse.(t,ti3,tf3)+I4*pulse.(t,ti4,tf4)+I5*pulse.(t,ti5,tf5),linewidth=1.5,xlims=(ti5-600,tf3+2500))
 xlabel!("t")
 
 l = @layout [
@@ -112,6 +112,6 @@ l = @layout [
 
 CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
-# savefig(CC,"sec2_LR_II_mod.pdf")
+savefig(CC,"sec2_LR_II_mod.pdf")
 
 CC
