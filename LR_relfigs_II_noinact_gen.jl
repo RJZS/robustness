@@ -9,13 +9,13 @@ using DifferentialEquations, LinearAlgebra, DSP, JLD
 include("LR_odes.jl")
 # Need to put a seed here?
 
-num_trials = 6
+num_trials = 5
 
-max_error = 0.1 # 0.08 # 0.1 gives a mismatch of up to +/- 5%
-max_tau_error = 0.00001 # 0.02
+max_error = 0.08 # 0.08 # 0.1 gives a mismatch of up to +/- 5%
+max_tau_error = 0.03 # 0.02
 
 d = Normal(0,1)
-noise_sf = 18
+noise_sf = 20
 
 ## Definition of parameters
 tau_s = 50
@@ -128,7 +128,7 @@ for idx in 1:num_trials
 
 
     # Now run the observer.
-    # Iappo = t -> 0. + 0.4*sin(0.0008*t); # 0.2 + 0.4*sin(0.001*t);
+    Iappo = t -> 0. + 0.4*sin(0.0008*t); # 0.2 + 0.4*sin(0.001*t);
     function step(t)
         0.5 * (sign(t) + 1)
     end
@@ -148,7 +148,7 @@ for idx in 1:num_trials
         out
     end
 
-    Iappo = t -> piecewise(t)
+    # Iappo = t -> piecewise(t)
     
     # Iappo = -0.8;
     Iappo2 = 0.;
@@ -156,7 +156,7 @@ for idx in 1:num_trials
     γ = 0.2;
     α = 0.0001;
     # Tfinal= 65000.0; # Non-diag observer converges faster.
-    Tfinal= 60000; # 290000; # 300000.0;
+    Tfinal= 65000; # 290000; # 300000.0;
     tspan=(0.0,Tfinal);
 
     x0 =  [-1.5 -1.5 -1.5 -0.5 -0.5 -0.5];

@@ -76,7 +76,7 @@ axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
 plt.savefig("sec5_LR_II_raster.png")
 
 # Example plot
-eg_sim = 2 # Which simulation to use for the example plot
+eg_sim = 3 # Which simulation to use for the example plot
 fig, axs = plt.subplots(2, 2, sharey=True)
 axs[0][0].plot(t, Ref[:,0], color='tab:red')
 axs[0][0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
