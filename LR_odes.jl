@@ -593,6 +593,8 @@ function LR_observer_noinact_nondiag!(du,u,p,t)
     
     α1   = p[13]
     γ   = p[14]
+
+    tau_ests = p[15] # Estimated time constants (for uncertain model)
     
     # Variables
     V = u[1]
@@ -625,8 +627,8 @@ function LR_observer_noinact_nondiag!(du,u,p,t)
 
     du[4] = dot(ϕ̂,θ̂) -V  + Iapp(t) + γ*(1+Ψ'*P*Ψ)*(V-Vh)
 
-    du[5] = (1/tau_s) * (V - Vsh)
-    du[6] = (1/tau_us) * (V - Vush)
+    du[5] = (1/tau_ests[1]) * (V - Vsh)
+    du[6] = (1/tau_ests[2]) * (V - Vush)
     
     du[7:10]= γ*P*Ψ*(V-Vh); # dθ̂ 
     du[27:30] = -γ*Ψ + ϕ̂;  # dΨ
@@ -1249,11 +1251,11 @@ function LR_observer_RefTrack_mis!(du,u,p,t)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
-    du[10] = -V2  -element(V2,afn,dfn) -element(Vs2,asp,dsp) +
-        -element(Vs2,asn2,dsn) -element(Vus2,ausp,dusp) + Iapp +
+    du[10] = -V2  -element(V2,afn,delta_ests[1]) -element(Vs2,asp,delta_ests[2]) +
+        -element(Vs2,asn2,delta_ests[3]) -element(Vus2,ausp,delta_ests[4]) + Iapp +
         -element(Vs2,θ̂-asn2,dsn) # Control current
-    du[11] = (1/tau_s)  * (V2 - Vs2)
-    du[12] = (1/tau_us) * (V2 - Vus2)
+    du[11] = (1/tau_ests[1])  * (V2 - Vs2)
+    du[12] = (1/tau_ests[2]) * (V2 - Vus2)
 
     # Adaptive Observer
     Vh = u[4]
@@ -1264,15 +1266,15 @@ function LR_observer_RefTrack_mis!(du,u,p,t)
     P = u[8]
     Ψ = u[9]
 
-    ϕ̂ = -element(Vsh,1,delta_ests[3])
+    ϕ̂ = -element(Vsh,1,dsn)
 
-    du[4] = ϕ̂*θ̂ - V  -element(V,afn,delta_ests[1]) -element(Vsh,asp,delta_ests[2]) +
-            -element(Vush,ausp,delta_ests[4]) + Iapp + γ*(1+sum(P.*Ψ.^2))*(V-Vh)
+    du[4] = ϕ̂*θ̂ - V  -element(V,afn,dfn) -element(Vsh,asp,dsp) +
+            -element(Vush,ausp,dusp) + Iapp + γ*(1+sum(P.*Ψ.^2))*(V-Vh)
 
-    du[5] = (1/tau_ests[1]) * (V - Vsh)
-    du[6] = (1/tau_ests[2]) * (V - Vush)
+    du[5] = (1/tau_s) * (V - Vsh)
+    du[6] = (1/tau_us) * (V - Vush)
     
     du[7]= t > 25000 ? 0 : γ*P.*Ψ*(V-Vh); # dθ̂ 
     du[9] = -γ*Ψ + ϕ̂;  # dΨ
-    du[8] = α*P - α*P.^2 .* Ψ.^2;
+    du[8] = α*P - γ*P.^2 .* Ψ.^2;
 end

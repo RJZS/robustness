@@ -110,14 +110,14 @@ for idx in 1:num_trials
     x0 = [-1.9 -1.9 -1.9];
     xh0 = [-1 -1 -1];
     θ̂₀ = [.1 .1 .1 .1];
-    # P₀ = [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]; # For non-diag observer.
-    P₀ = [1 1 1 1];
+    P₀ = [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1]; # For non-diag observer.
+    # P₀ = [1 1 1 1];
     Ψ₀ = [0 0 0 0];
     u0 = [x0 xh0 θ̂₀ P₀ Ψ₀];
 
     println("Learning...")
     p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iappobs,delta_ests,α,γ,tau_ests);
-    probObs = ODEProblem(LR_observer_noinact!,u0,tspan,p) # Simulation without noise (ODE)
+    probObs = ODEProblem(LR_observer_noinact_nondiag!,u0,tspan,p) # Simulation without noise (ODE)
     solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
     println("Finished learning.")
 
