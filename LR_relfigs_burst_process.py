@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
-fname = "sec4_LR_burst.jld"
+fname = "sec4_LR_burst_withstep.jld"
 
 f = h5py.File(fname, "r")
 
@@ -17,9 +17,14 @@ t      = f.get("t")
 Ref     = f.get("Ref")
 Mis     = f.get("Mis")
 Learned = f.get("Learned")
+RefStep     = f.get("RefStep")
+MisStep     = f.get("MisStep")
+LearnedStep = f.get("LearnedStep")
 
 t=np.array(t); Ref=np.array(Ref); Mis=np.array(Mis); Learned=np.array(Learned)
+RefStep=np.array(RefStep); MisStep=np.array(MisStep); LearnedStep=np.array(LearnedStep)
 num_trials = Mis.shape[0]
+
 def convert_to_timings(t, y, thresh=0):
     event_idxs = np.where(y>thresh)
     event_times = t[event_idxs]
@@ -34,8 +39,18 @@ for i in range(num_trials):
     PrelearnEvents.append(convert_to_timings(t,Mis[i,:]))
     MisEvents.append(convert_to_timings(t,Mis[i,:]))
     LearnedEvents.append(convert_to_timings(t,Learned[i,:]))
-
 PrelearnEvents.append(RefEvents)
+
+# And the same again for the step
+RefEventsStep = convert_to_timings(t,RefStep)
+PrelearnEventsStep     = [[]] # The double brackets are to 1-index the trials, by including a blank one at 0.
+MisEventsStep     = [[]] # Not used.
+LearnedEventsStep = [[]]
+for i in range(num_trials):
+    PrelearnEventsStep.append(convert_to_timings(t,MisStep[i,:]))
+    MisEventsStep.append(convert_to_timings(t,MisStep[i,:]))
+    LearnedEventsStep.append(convert_to_timings(t,LearnedStep[i,:]))
+PrelearnEventsStep.append(RefEventsStep)
 
 # Colouring of plots
 from itertools import repeat
@@ -55,7 +70,7 @@ plt.ylabel("Trial")
 plt.savefig("sec5_LR_bursting_raster.png")
 
 # Example plot
-eg_sim = 1 # Which simulation to use for the example plot
+eg_sim = 2 # Which simulation to use for the example plot
 fig, axs = plt.subplots(1, 2, sharey=True)
 axs[0].plot(t, Ref, color='tab:red')
 axs[0].plot(t, Mis[eg_sim,:], color='tab:blue')
@@ -65,4 +80,15 @@ axs[0].set_xlabel("t")
 axs[1].set_xlabel("t")
 axs[0].set_ylabel("V")
 plt.savefig("sec5_LR_bursting_example.png")
+
+# Raster for step input
+fig, ax = plt.subplots(1,1)
+l1 = ax.eventplot(PrelearnEventsStep,colors=color_list)
+l2 = ax.eventplot(LearnedEventsStep, colors='tab:orange', linelengths=0.7)
+ax.set_yticks([1,2,3,4,5,6])
+ax.axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=9.8)
+plt.xlabel("t")
+plt.ylabel("Trial")
+plt.savefig("sec5_LR_bursting_raster_step.png")
+
 plt.show()

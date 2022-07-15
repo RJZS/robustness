@@ -60,7 +60,12 @@ Ref = zeros(Int(Tfinalrel/dt+2))
 Mis = zeros(Int(Tfinalrel/dt+2),num_trials)
 Learned = zeros(Int(Tfinalrel/dt+2),num_trials)
 
+RefStep = zeros(Int(Tfinalrel/dt+2))
+MisStep = zeros(Int(Tfinalrel/dt+2),num_trials)
+LearnedStep = zeros(Int(Tfinalrel/dt+2),num_trials)
+
 thetalearned = zeros(4,num_trials)
+thetalearnedStep = zeros(4,num_trials)
 
 # Run the reference simulation.
 Tfinal= Tfinalrel
@@ -72,6 +77,14 @@ probRef = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
 solRef = solve(probRef,Euler(),adaptive=false,dt=dt)
 t = solRef.t
 Ref = solRef[1,:]
+
+# Now the step version
+Istep = -2.2*ones(Int(Tfinalrel/dt+1))
+Istep[1:30000] .= -2.6
+p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Istep,delta_ests_true)
+probRefStep = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
+solRefStep = solve(probRefStep,Euler(),adaptive=false,dt=dt)
+RefStep = solRefStep[1,:]
 
 for idx in 1:num_trials
     println("Trial Number: $idx")
@@ -94,12 +107,19 @@ for idx in 1:num_trials
     solMis = solve(probMis,Euler(),adaptive=false,dt=dt)
     global Mis[:,idx] = solMis[1,:]
 
+    # Now the version with the step
+    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],Istep,delta_ests)
+    probMisStep = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
+    solMisStep = solve(probMisStep,Euler(),adaptive=false,dt=dt)
+    global MisStep[:,idx] = solMisStep[1,:]
+
     # p1=plot(solRef.t, solRef[1,:])
     # plot!(solRef.t, solMis[1,:])
 
 
     # Now run the observer.
     Iappobs = t -> -2.6 + 0.4*sin(0.001*t)
+    IappobsStep = t -> -2.2
 
     γ = 2;
     α = 0.0001;
@@ -119,6 +139,10 @@ for idx in 1:num_trials
     p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iappobs,delta_ests,α,γ,tau_ests);
     probObs = ODEProblem(LR_observer_noinact_nondiag!,u0,tspan,p) # Simulation without noise (ODE)
     solObs = solve(probObs,Euler(),adaptive=false,dt=dt)
+
+    p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,IappobsStep,delta_ests,α,γ,tau_ests);
+    probObsStep = ODEProblem(LR_observer_noinact_nondiag!,u0,tspan,p) # Simulation without noise (ODE)
+    global solObsStep = solve(probObsStep,Euler(),adaptive=false,dt=dt)
     println("Finished learning.")
 
     # global plt0 = plot(solObs.t, solObs[1,:])
@@ -139,6 +163,13 @@ for idx in 1:num_trials
     auspl = mean(solObs[10,j-10000:j]);
     global thetalearned[:,idx] = [afnl aspl asnl auspl];
 
+    # And for the step
+    afnlS = mean(solObsStep[7,j-10000:j]);
+    asplS = mean(solObsStep[8,j-10000:j]);
+    asnlS = mean(solObsStep[9,j-10000:j]);
+    ausplS = mean(solObsStep[10,j-10000:j]);
+    global thetalearnedStep[:,idx] = [afnlS asplS asnlS ausplS];
+
 
     # Finally, apply the learned parameters!
     x0 = [-1.5 -1.5 -1.5]
@@ -150,11 +181,18 @@ for idx in 1:num_trials
     solLearned = solve(probLearned,Euler(),adaptive=false,dt=dt)
     global Learned[:,idx] = solLearned[1,:]
 
+    # And for the step
+    p=(afnl,aspl,asnl,auspl,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],Istep,delta_ests)
+    probLearnedStep = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
+    solLearnedStep = solve(probLearnedStep,Euler(),adaptive=false,dt=dt)
+    global LearnedStep[:,idx] = solLearnedStep[1,:]
+
     # p2=plot(solRef.t, solRef[1,:])
     # plot!(solLearned.t, solLearned[1,:])
 end
 
-save("sec4_LR_burst.jld","noise",noise,
+save("sec4_LR_burst_withstep.jld","noise",noise,
     "delta_est_values",delta_est_values,"tau_est_values",tau_est_values,
-    "thetalearned",thetalearned,
-    "t",t,"Ref",Ref,"Mis",Mis,"Learned",Learned)
+    "thetalearned",thetalearned,"thetalearnedStep",thetalearnedStep,
+    "t",t,"Ref",Ref,"Mis",Mis,"Learned",Learned,
+    "RefStep",RefStep,"MisStep",MisStep,"LearnedStep",LearnedStep)
