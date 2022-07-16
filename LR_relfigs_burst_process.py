@@ -70,7 +70,7 @@ plt.ylabel("Trial")
 plt.savefig("sec5_LR_bursting_raster.png")
 
 # Example plot
-eg_sim = 2 # Which simulation to use for the example plot
+eg_sim = 0 # Which simulation to use for the example plot
 fig, axs = plt.subplots(1, 2, sharey=True)
 axs[0].plot(t, Ref, color='tab:red')
 axs[0].plot(t, Mis[eg_sim,:], color='tab:blue')

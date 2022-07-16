@@ -182,7 +182,7 @@ for idx in 1:num_trials
     global Learned[:,idx] = solLearned[1,:]
 
     # And for the step
-    p=(afnl,aspl,asnl,auspl,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],Istep,delta_ests)
+    p=(afnlS,asplS,asnlS,ausplS,dfn,dsp,dsn,dusp,tau_ests[1],tau_ests[2],Istep,delta_ests)
     probLearnedStep = ODEProblem(LR_ODE_rel!,u0,tspan,p) # Simulation without noise (ODE)
     solLearnedStep = solve(probLearnedStep,Euler(),adaptive=false,dt=dt)
     global LearnedStep[:,idx] = solLearnedStep[1,:]
