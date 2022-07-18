@@ -12,7 +12,7 @@ function asp_mod(t)
     if t < 2000
         2
     else
-        2 +(t-2000)/3000
+        2 +(t-2000)/760
     end
 end
 
@@ -98,3 +98,5 @@ ylabel!(L"$\alpha_{\rm{s}}^+$")
 
 savefig(CC,"sec2_LR_spiking_mod.pdf")
 savefig(pgain,"sec2_LR_spiking_mod_pgain.pdf")
+
+CC
