@@ -166,7 +166,7 @@ ax2.axis(xmin=t[0]-1.25, xmax=t[-1]+1.25,ymin=0.2,ymax=num_trials+1.8)
 axI = figStep.add_subplot(gs[1,:])
 Istep = 0.4*np.ones(int(25000/0.1+1))
 Istep[:50000] = 0.2
-axI.plot(t[:-1], noise)
+axI.plot(t[:-1], Istep)
 axI.set_ylabel("I")
 axI.set_xlabel(r"t [$\times 10 ^3$]")
 

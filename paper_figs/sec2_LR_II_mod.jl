@@ -123,6 +123,6 @@ xlabel!(L"t [x $10^3$]")
 ylabel!(L"$\alpha_{\rm{s},2}^-$")
 
 savefig(CC,"sec2_LR_II_mod.pdf")
-savefig(pgain,"sec2_LR_bursting_mod_pgain.pdf")
+savefig(pgain,"sec2_LR_II_mod_pgain.pdf")
 
 CC

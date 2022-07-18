@@ -5,8 +5,8 @@ using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
 
-max_error = 0.1 # 0.1 gives a mismatch of up to +/- 5%
-max_tau_error = 0.02 # 0.02
+max_error = 0.2 # 0.1 gives a mismatch of up to +/- 5%
+max_tau_error = 0.2 # 0.02
 
 # Modulation fn
 function asn_mod(t)
@@ -35,9 +35,9 @@ dusp = -1.5
 
 asn2 = -0.5
 
-γ =2;
-α = 0.0001;
-Tfinal= 30500.0;
+γ =5;
+α = 0.001;
+Tfinal= 50000 #30500.0;
 tspan=(0.0,Tfinal);
 dt=0.1;
 
@@ -45,7 +45,7 @@ Iapp = -0.6;
 
 mis = (rand(Uniform(0,max_error),4).-max_error/2).+1
 mis_tau = (rand(Uniform(0,max_tau_error),2).-max_tau_error/2).+1
-delta_ests = [0.01,-0.01,-1.5,-1.5].*mis
+delta_ests = [0.05,-0.05,-1.5,-1.5].*mis
 tau_ests = [tau_s, tau_us].*mis_tau
 
 x0 = -0.98*[1 1 1];
@@ -66,14 +66,15 @@ V2 = sol[10,:];
 
 asn_est = sol[7,:];
 
-p1 = plot(t,V,label="Reference",legend=:bottomleft)
-plot!(t,V2,label="Controlled")
+p1 = plot(t/1000,V,label="Reference",legend=:bottomleft)
+plot!(t/1000,V2,label="Controlled")
 ylabel!("V")
 
-p2 = plot(t,asn_mod,linewidth=2,label="True",legend=:bottomleft)
-plot!(t, asn_est,linewidth=1.5,label="Estimate")
-xlabel!("t")
-ylabel!(L"\alpha_s^-")
+asn_mod_plot = t -> asn_mod(t*1000)
+p2 = plot(t/1000,asn_mod_plot,linewidth=2,label="True",legend=:bottomleft)
+plot!(t/1000, asn_est,linewidth=1.5,label="Estimate")
+xlabel!(L"t [x $10^3$]")
+ylabel!(L"\alpha_{\rm{s}}^-")
 
 CC = plot(p1, p2, layout = (2, 1))
 savefig(CC, "sec3_LR_bursting_mis.pdf")

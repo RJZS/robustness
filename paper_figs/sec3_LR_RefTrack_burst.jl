@@ -33,7 +33,7 @@ dusp = -1.5
 asn2 = -0.5
 
 γ =2;
-α = 0.0001;
+α = 0.001;
 Tfinal= 30000.0;
 tspan=(0.0,Tfinal);
 dt=0.1;
@@ -58,14 +58,15 @@ V2 = sol[10,:];
 
 asn_est = sol[7,:];
 
-p1 = plot(t,V,label="Reference",legend=:bottomleft)
-plot!(t,V2,label="Controlled")
+p1 = plot(t/1000,V,label="Reference",legend=:bottomleft)
+plot!(t/1000,V2,label="Controlled")
 ylabel!("V")
 
-p2 = plot(t,asn_mod,linewidth=2,label="True",legend=:bottomleft)
-plot!(t, asn_est,linewidth=1.5,label="Estimate")
+asn_mod_plot = t -> asn_mod(t*1000)
+p2 = plot(t/1000,asn_mod_plot,linewidth=2,label="True",legend=:bottomleft)
+plot!(t/1000, asn_est,linewidth=1.5,label="Estimate")
 xlabel!("t")
-ylabel!(L"\alpha_s^-")
+ylabel!(L"\alpha_{\rm{s}}^-")
 
 CC = plot(p1, p2, layout = (2, 1))
 savefig(CC, "sec3_LR_bursting.pdf")
