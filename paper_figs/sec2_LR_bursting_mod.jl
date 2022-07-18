@@ -63,23 +63,24 @@ sol = solve(prob,dtmax=0.1)
 # ylabel!("V")
 
 # Voltage response
-p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
+p1=plot(sol.t/1000, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
-p1zoom=plot(sol.t, sol[1,:],linewidth=1.5,legend=false,xlims=(ti3-50,tf1+1250))
+p1zoom=plot(sol.t/1000, sol[1,:],linewidth=1.5,legend=false,xlims=((ti3-50)/1000,(tf1+1250)/1000))
 xticks!([3000, 3500, 4000])
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
-p2=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3)
+Ip2 = Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3)
+p2=plot(t/1000,Ip2,linewidth=3)
 yticks!([-2.6, -2.5, -2.4])
-xlabel!("t")
+xlabel!(L"t [x $10^3$]")
 ylabel!(L"i_{\rm{app}}")
 
-p2zoom=plot(t,Iapp .+I1*pulse.(t,ti1,tf1)+I2*pulse.(t,ti2,tf2)+I3*pulse.(t,ti3,tf3),linewidth=3,xlims=(ti3-50,tf1+1250))
+p2zoom=plot(t/1000,Ip2,linewidth=3,xlims=((ti3-50)/1000,(tf1+1250)/1000))
 yticks!([-2.6, -2.5, -2.4])
-xticks!([3000, 3500, 4000])
-xlabel!("t")
+xticks!([3, 3.5, 4])
+xlabel!(L"t [x $10^3$]")
 
 l = @layout [
     [a{1.0*w,0.7*h}
@@ -89,6 +90,12 @@ l = @layout [
 
 CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
+asn_mod_plot = t -> asn_mod(t*1000)
+pgain = plot(t/1000,asn_mod_plot,color="darkred",legend=false)
+xlabel!(L"t [x $10^3$]")
+ylabel!(L"$\alpha_{\rm{s}}^-$")
+
 savefig(CC,"sec2_LR_bursting_mod.pdf")
+savefig(pgain,"sec2_LR_bursting_mod_pgain.pdf")
 
 CC
