@@ -2,11 +2,12 @@
 # on Luka's bursting circuit, using data generated in 'LR_relfigs_burst_gen.jl'.
 
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 import h5py
 
 # fname = "sec4_LR_II_oldpaperversion.jld" # Version previously used in paper.
-fname = "sec4_LR_II_noinact_withstep.jld"
+fname = "sec4_LR_II_noinact_withstep.jld" # From LR_Relfigs_II_noinact_gen.jl
 
 f = h5py.File(fname, "r")
 
@@ -24,6 +25,7 @@ LearnedStep = f.get("LearnedStep")
 
 t=np.array(t); Ref=np.array(Ref); Mis=np.array(Mis); Learned=np.array(Learned)
 RefStep=np.array(RefStep); MisStep=np.array(MisStep); LearnedStep=np.array(LearnedStep)
+noise=np.array(noise)
 num_trials = Mis.shape[0]
 
 def convert_to_timings(t, y, thresh=0):
@@ -84,54 +86,111 @@ color_list = []
 color_list.extend(repeat(mis_color,num_trials+1))
 color_list.append('tab:red') # Ref colour
 
-# plt.eventplot(MisEvents)
-fig, axs = plt.subplots(1,2)
-l1 = axs[0].eventplot(PrelearnEvents1,colors=color_list)
-l2 = axs[0].eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
-axs[0].set_yticks(np.arange(num_trials))
-axs[0].set_ylabel("Trial")
-axs[0].set_xlabel("t")
-axs[0].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
+## PLOTTING
+# Fluctuating Input
+dpi = 200
+# fig, axs = plt.subplots(1,2)
+fig = plt.figure(constrained_layout=True,dpi=dpi)
+gs = GridSpec(5, 2, figure=fig, height_ratios=[1,0.6,1,1,1])
+# Raster plots
+ax1 = fig.add_subplot(gs[0, :])
+ax2 = fig.add_subplot(gs[4, :])
+l1 = ax1.eventplot(PrelearnEvents1,colors=color_list)
+l2 = ax1.eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
+ax1.set_yticks(np.arange(num_trials+1))
+ax1.set_ylabel("Trial")
+ax1.set_xlabel("t")
+ax1.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
 
-l1 = axs[1].eventplot(PrelearnEvents2,colors=color_list)
-l2 = axs[1].eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
-axs[1].set_yticks(np.arange(num_trials))
-axs[1].set_xlabel("t")
-axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
-plt.savefig("sec5_LR_II_raster.png")
+l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
+l2 = ax2.eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
+ax2.set_yticks(np.arange(num_trials+1))
+ax2.set_xlabel("t")
+ax2.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+# plt.savefig("sec5_LR_II_raster.png")
 
-# Example plot
-eg_sim = 0 # Which simulation to use for the example plot
-fig, axs = plt.subplots(2, 2, sharey=True)
-axs[0][0].plot(t, Ref[:,0], color='tab:red')
-axs[0][0].plot(t, Mis[eg_sim,:,0], color='tab:blue')
-axs[0][1].plot(t, Ref[:,0], color='tab:red')
-axs[0][1].plot(t, Learned[eg_sim,:,0], color='tab:orange')
-axs[0][0].set_ylabel("V")
+# Current plot
+axI = fig.add_subplot(gs[1,:])
+axI.plot(t[:-1], noise)
+axI.set_ylabel("I")
+axI.set_xlabel("t")
 
-axs[1][0].plot(t, Ref[:,1], color='tab:red')
-axs[1][0].plot(t, Mis[eg_sim,:,1], color='tab:blue')
-axs[1][1].plot(t, Ref[:,1], color='tab:red')
-axs[1][1].plot(t, Learned[eg_sim,:,1], color='tab:orange')
-axs[1][0].set_ylabel("V")
-axs[1][0].set_xlabel("t")
-axs[1][1].set_xlabel("t")
-plt.savefig("sec5_LR_II_example.png")
+# Time-series plot
+blend = 0.5 # For alpha parameter of Line2D
+num_samps = num_trials # Number of trials to plot.
+ax3 = fig.add_subplot(gs[2, 0])
+ax4 = fig.add_subplot(gs[2, 1])
+ax5 = fig.add_subplot(gs[3, 0])
+ax6 = fig.add_subplot(gs[3, 1])
+ax3.plot(t, Ref[:,0], color='tab:red')
+for i in range(num_samps):
+    ax3.plot(t, Mis[i,:,0], color='tab:blue', alpha=blend)
+ax4.plot(t, Ref[:,0], color='tab:red')
+for i in range(num_samps):
+    ax4.plot(t, Learned[i,:,0], color='tab:orange', alpha=blend)
+ax3.set_ylabel("V")
 
-# Raster for step input
-fig, axs = plt.subplots(1,2)
-l1 = axs[0].eventplot(PrelearnEvents1Step,colors=color_list)
-l2 = axs[0].eventplot(LearnedEvents1Step, colors='tab:orange', linelengths=0.7)
-axs[0].set_yticks(np.arange(num_trials))
-axs[0].set_ylabel("Trial")
-axs[0].set_xlabel("t")
-axs[0].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
+ax5.plot(t, Ref[:,1], color='tab:red')
+for i in range(num_samps):
+    ax5.plot(t, Mis[i,:,1], color='tab:blue')
+ax6.plot(t, Ref[:,1], color='tab:red')
+for i in range(num_samps):
+    ax6.plot(t, Learned[i,:,1], color='tab:orange')
+ax5.set_ylabel("V")
+ax5.set_xlabel("t")
+ax6.set_xlabel("t")
+# plt.savefig("sec5_LR_II_example.png")
+plt.savefig("sec5_LR_II.png")
 
-l1 = axs[1].eventplot(PrelearnEvents2Step,colors=color_list)
-l2 = axs[1].eventplot(LearnedEvents2Step, colors='tab:orange', linelengths=0.7)
-axs[1].set_yticks(np.arange(num_trials))
-axs[1].set_xlabel("t")
-axs[1].axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=num_trials+1.8)
-plt.savefig("sec5_LR_II_raster_step.png")
+
+# Step Input
+figStep = plt.figure(constrained_layout=True,dpi=dpi)
+gs = GridSpec(5, 2, figure=figStep, height_ratios=[1,0.6,1,1,1])
+ax1 = figStep.add_subplot(gs[0, :])
+ax2 = figStep.add_subplot(gs[4, :])
+l1 = ax1.eventplot(PrelearnEvents1Step,colors=color_list)
+l2 = ax1.eventplot(LearnedEvents1Step, colors='tab:orange', linelengths=0.7)
+ax1.set_yticks(np.arange(num_trials+1))
+ax1.set_ylabel("Trial")
+ax1.set_xlabel("t")
+ax1.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+
+l1 = ax2.eventplot(PrelearnEvents2Step,colors=color_list)
+l2 = ax2.eventplot(LearnedEvents2Step, colors='tab:orange', linelengths=0.7)
+ax2.set_yticks(np.arange(num_trials+1))
+ax2.set_xlabel("t")
+ax2.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+
+# Current plot
+axI = figStep.add_subplot(gs[1,:])
+Istep = 0.4*np.ones(int(25000/0.1+1))
+Istep[:50000] = 0.2
+axI.plot(t[:-1], noise)
+axI.set_ylabel("I")
+axI.set_xlabel("t")
+
+# Time-series plot
+ax3 = figStep.add_subplot(gs[2, 0])
+ax4 = figStep.add_subplot(gs[2, 1])
+ax5 = figStep.add_subplot(gs[3, 0])
+ax6 = figStep.add_subplot(gs[3, 1])
+ax3.plot(t, RefStep[:,0], color='tab:red')
+for i in range(num_samps):
+    ax3.plot(t, MisStep[i,:,0], color='tab:blue', alpha=blend)
+ax4.plot(t, RefStep[:,0], color='tab:red')
+for i in range(num_samps):
+    ax4.plot(t, LearnedStep[i,:,0], color='tab:orange', alpha=blend)
+ax3.set_ylabel("V")
+
+ax5.plot(t, RefStep[:,1], color='tab:red')
+for i in range(num_samps):
+    ax5.plot(t, MisStep[i,:,1], color='tab:blue')
+ax6.plot(t, RefStep[:,1], color='tab:red')
+for i in range(num_samps):
+    ax6.plot(t, LearnedStep[i,:,1], color='tab:orange')
+ax5.set_ylabel("V")
+ax5.set_xlabel("t")
+ax6.set_xlabel("t")
+plt.savefig("sec5_LR_II_step.png")
 
 plt.show()

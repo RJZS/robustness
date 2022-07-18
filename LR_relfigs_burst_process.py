@@ -2,6 +2,7 @@
 # on Luka's bursting circuit, using data generated in 'LR_relfigs_burst_gen.jl'.
 
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 import h5py
 
@@ -23,6 +24,7 @@ LearnedStep = f.get("LearnedStep")
 
 t=np.array(t); Ref=np.array(Ref); Mis=np.array(Mis); Learned=np.array(Learned)
 RefStep=np.array(RefStep); MisStep=np.array(MisStep); LearnedStep=np.array(LearnedStep)
+noise=np.array(noise)
 num_trials = Mis.shape[0]
 
 def convert_to_timings(t, y, thresh=0):
@@ -59,36 +61,82 @@ color_list = []
 color_list.extend(repeat(mis_color,num_trials+1))
 color_list.append('tab:red') # Ref colour
 
+dpi = 200
 # plt.eventplot(MisEvents)
-fig, ax = plt.subplots(1,1)
-l1 = ax.eventplot(PrelearnEvents,colors=color_list)
-l2 = ax.eventplot(LearnedEvents, colors='tab:orange', linelengths=0.7)
-ax.set_yticks([1,2,3,4,5,6,7,8])
-ax.axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=9.8)
-plt.xlabel("t")
-plt.ylabel("Trial")
-plt.savefig("sec5_LR_bursting_raster.png")
+fig = plt.figure(constrained_layout=True,dpi=dpi)
+gs = GridSpec(3, 2, figure=fig, height_ratios=[1,0.4,1])
+ax1 = fig.add_subplot(gs[0, :])
+# fig, ax = plt.subplots(1,1)
+l1 = ax1.eventplot(PrelearnEvents,colors=color_list)
+l2 = ax1.eventplot(LearnedEvents, colors='tab:orange', linelengths=0.7)
+ax1.set_yticks([1,2,3,4,5,6,7,8])
+ax1.axis(xmin=t[0]-1000, xmax=t[-1]+1000,ymin=0.2,ymax=9.8)
+ax1.set_xlabel("t")
+ax1.set_ylabel("Trial")
+# plt.xlabel("t")
+# plt.ylabel("Trial")
+# plt.savefig("sec5_LR_bursting_raster.png")
 
-# Example plot
-eg_sim = 0 # Which simulation to use for the example plot
-fig, axs = plt.subplots(1, 2, sharey=True)
-axs[0].plot(t, Ref, color='tab:red')
-axs[0].plot(t, Mis[eg_sim,:], color='tab:blue')
-axs[1].plot(t, Ref, color='tab:red')
-axs[1].plot(t, Learned[eg_sim,:], color='tab:orange')
-axs[0].set_xlabel("t")
-axs[1].set_xlabel("t")
-axs[0].set_ylabel("V")
-plt.savefig("sec5_LR_bursting_example.png")
+# Current plot
+axI = fig.add_subplot(gs[1,:])
+axI.plot(t[:-1], noise)
+axI.set_ylabel("I")
+axI.set_xlabel("t")
+
+blend = 0.5 # For alpha parameter of Line2D
+
+# Time-series plot
+num_samps = 8 # Number of trials to plot.
+# fig, axs = plt.subplots(1, 2, sharey=True)
+ax2 = fig.add_subplot(gs[2,0])
+ax3 = fig.add_subplot(gs[2,1])
+ax2.plot(t, Ref, color='tab:red')
+for i in range(num_samps):
+    ax2.plot(t, Mis[i,:], color='tab:blue', alpha=blend)
+ax3.plot(t, Ref, color='tab:red')
+for i in range(num_samps):
+    ax3.plot(t, Learned[i,:], color='tab:orange', alpha=blend)
+ax2.set_xlabel("t")
+ax3.set_xlabel("t")
+ax2.set_ylabel("V")
+# plt.savefig("sec5_LR_bursting_timeseries.png")
+
+plt.savefig("sec5_LR_bursting.png")
 
 # Raster for step input
-fig, ax = plt.subplots(1,1)
-l1 = ax.eventplot(PrelearnEventsStep,colors=color_list)
-l2 = ax.eventplot(LearnedEventsStep, colors='tab:orange', linelengths=0.7)
-ax.set_yticks([1,2,3,4,5,6])
-ax.axis(xmin=t[0], xmax=t[-1],ymin=0.2,ymax=9.8)
-plt.xlabel("t")
-plt.ylabel("Trial")
-plt.savefig("sec5_LR_bursting_raster_step.png")
+figStep = plt.figure(constrained_layout=True,dpi=dpi)
+gsStep = GridSpec(3, 2, figure=figStep, height_ratios=[1,0.4,1])
+ax1 = figStep.add_subplot(gsStep[0, :])
+l1 = ax1.eventplot(PrelearnEventsStep,colors=color_list)
+l2 = ax1.eventplot(LearnedEventsStep, colors='tab:orange', linelengths=0.7)
+ax1.set_yticks([1,2,3,4,5,6])
+ax1.axis(xmin=t[0]-1000, xmax=t[-1]+1000,ymin=0.2,ymax=9.8)
+ax1.set_xlabel("t")
+ax1.set_ylabel("Trial")
+# plt.savefig("sec5_LR_bursting_raster_step.png")
+
+# Current plot
+axI = figStep.add_subplot(gsStep[1,:])
+Istep = -2.2*np.ones(int(20000/0.1+1))
+Istep[0:30000] = -2.6
+axI.plot(t[:-1], Istep)
+axI.set_ylabel("I")
+axI.set_xlabel("t")
+
+# Time-series plot for step input
+ax2 = figStep.add_subplot(gsStep[2,0])
+ax3 = figStep.add_subplot(gsStep[2,1])
+ax2.plot(t, RefStep, color='tab:red')
+for i in range(num_samps):
+    ax2.plot(t, MisStep[i,:], color='tab:blue', alpha=blend)
+ax3.plot(t, RefStep, color='tab:red')
+for i in range(num_samps):
+    ax3.plot(t, LearnedStep[i,:], color='tab:orange', alpha=blend)
+ax2.set_xlabel("t")
+ax3.set_xlabel("t")
+ax2.set_ylabel("V")
+# plt.savefig("sec5_LR_bursting_timeseries_step.png")
+
+plt.savefig("sec5_LR_bursting_step.png")
 
 plt.show()
