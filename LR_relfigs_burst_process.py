@@ -27,6 +27,8 @@ RefStep=np.array(RefStep); MisStep=np.array(MisStep); LearnedStep=np.array(Learn
 noise=np.array(noise)
 num_trials = Mis.shape[0]
 
+t = t / 1000
+
 def convert_to_timings(t, y, thresh=0):
     event_idxs = np.where(y>thresh)
     event_times = t[event_idxs]
@@ -70,8 +72,7 @@ ax1 = fig.add_subplot(gs[0, :])
 l1 = ax1.eventplot(PrelearnEvents,colors=color_list)
 l2 = ax1.eventplot(LearnedEvents, colors='tab:orange', linelengths=0.7)
 ax1.set_yticks([1,2,3,4,5,6,7,8])
-ax1.axis(xmin=t[0]-1000, xmax=t[-1]+1000,ymin=0.2,ymax=9.8)
-ax1.set_xlabel("t")
+ax1.axis(xmin=t[0]-1, xmax=t[-1]+1,ymin=0.2,ymax=9.8)
 ax1.set_ylabel("Trial")
 # plt.xlabel("t")
 # plt.ylabel("Trial")
@@ -81,7 +82,7 @@ ax1.set_ylabel("Trial")
 axI = fig.add_subplot(gs[1,:])
 axI.plot(t[:-1], noise)
 axI.set_ylabel("I")
-axI.set_xlabel("t")
+axI.set_xlabel(r"t [$\times 10 ^3$]")
 
 blend = 0.5 # For alpha parameter of Line2D
 
@@ -96,8 +97,8 @@ for i in range(num_samps):
 ax3.plot(t, Ref, color='tab:red')
 for i in range(num_samps):
     ax3.plot(t, Learned[i,:], color='tab:orange', alpha=blend)
-ax2.set_xlabel("t")
-ax3.set_xlabel("t")
+ax2.set_xlabel(r"t [$\times 10 ^3$]")
+ax3.set_xlabel(r"t [$\times 10 ^3$]")
 ax2.set_ylabel("V")
 # plt.savefig("sec5_LR_bursting_timeseries.png")
 
@@ -110,8 +111,7 @@ ax1 = figStep.add_subplot(gsStep[0, :])
 l1 = ax1.eventplot(PrelearnEventsStep,colors=color_list)
 l2 = ax1.eventplot(LearnedEventsStep, colors='tab:orange', linelengths=0.7)
 ax1.set_yticks([1,2,3,4,5,6])
-ax1.axis(xmin=t[0]-1000, xmax=t[-1]+1000,ymin=0.2,ymax=9.8)
-ax1.set_xlabel("t")
+ax1.axis(xmin=t[0]-1, xmax=t[-1]+1,ymin=0.2,ymax=9.8)
 ax1.set_ylabel("Trial")
 # plt.savefig("sec5_LR_bursting_raster_step.png")
 
@@ -121,7 +121,7 @@ Istep = -2.2*np.ones(int(20000/0.1+1))
 Istep[0:30000] = -2.6
 axI.plot(t[:-1], Istep)
 axI.set_ylabel("I")
-axI.set_xlabel("t")
+axI.set_xlabel(r"t [$\times 10 ^3$]")
 
 # Time-series plot for step input
 ax2 = figStep.add_subplot(gsStep[2,0])
@@ -132,8 +132,8 @@ for i in range(num_samps):
 ax3.plot(t, RefStep, color='tab:red')
 for i in range(num_samps):
     ax3.plot(t, LearnedStep[i,:], color='tab:orange', alpha=blend)
-ax2.set_xlabel("t")
-ax3.set_xlabel("t")
+ax2.set_xlabel(r"t [$\times 10 ^3$]")
+ax3.set_xlabel(r"t [$\times 10 ^3$]")
 ax2.set_ylabel("V")
 # plt.savefig("sec5_LR_bursting_timeseries_step.png")
 

@@ -26,6 +26,8 @@ LearnedStep = f.get("LearnedStep")
 t=np.array(t); Ref=np.array(Ref); Mis=np.array(Mis); Learned=np.array(Learned)
 RefStep=np.array(RefStep); MisStep=np.array(MisStep); LearnedStep=np.array(LearnedStep)
 noise=np.array(noise)
+
+t = t / 1000
 num_trials = Mis.shape[0]
 
 def convert_to_timings(t, y, thresh=0):
@@ -97,23 +99,23 @@ ax1 = fig.add_subplot(gs[0, :])
 ax2 = fig.add_subplot(gs[4, :])
 l1 = ax1.eventplot(PrelearnEvents1,colors=color_list)
 l2 = ax1.eventplot(LearnedEvents1, colors='tab:orange', linelengths=0.7)
-ax1.set_yticks(np.arange(num_trials+1))
+# ax1.set_yticks(np.arange(num_trials+1))
+ax1.set_yticks([1,3,5])
 ax1.set_ylabel("Trial")
-ax1.set_xlabel("t")
-ax1.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+ax1.axis(xmin=t[0]-1.25, xmax=t[-1]+1.25,ymin=0.2,ymax=num_trials+1.8)
 
 l1 = ax2.eventplot(PrelearnEvents2,colors=color_list)
 l2 = ax2.eventplot(LearnedEvents2, colors='tab:orange', linelengths=0.7)
-ax2.set_yticks(np.arange(num_trials+1))
-ax2.set_xlabel("t")
-ax2.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+ax2.set_yticks([1,3,5])
+ax2.set_xlabel(r"t [$\times 10 ^3$]")
+ax2.axis(xmin=t[0]-1.25, xmax=t[-1]+1.25,ymin=0.2,ymax=num_trials+1.8)
 # plt.savefig("sec5_LR_II_raster.png")
 
 # Current plot
 axI = fig.add_subplot(gs[1,:])
 axI.plot(t[:-1], noise)
 axI.set_ylabel("I")
-axI.set_xlabel("t")
+axI.set_xlabel(r"t [$\times 10 ^3$]")
 
 # Time-series plot
 blend = 0.5 # For alpha parameter of Line2D
@@ -137,8 +139,8 @@ ax6.plot(t, Ref[:,1], color='tab:red')
 for i in range(num_samps):
     ax6.plot(t, Learned[i,:,1], color='tab:orange')
 ax5.set_ylabel("V")
-ax5.set_xlabel("t")
-ax6.set_xlabel("t")
+ax5.set_xlabel(r"t [$\times 10 ^3$]")
+ax6.set_xlabel(r"t [$\times 10 ^3$]")
 # plt.savefig("sec5_LR_II_example.png")
 plt.savefig("sec5_LR_II.png")
 
@@ -150,16 +152,15 @@ ax1 = figStep.add_subplot(gs[0, :])
 ax2 = figStep.add_subplot(gs[4, :])
 l1 = ax1.eventplot(PrelearnEvents1Step,colors=color_list)
 l2 = ax1.eventplot(LearnedEvents1Step, colors='tab:orange', linelengths=0.7)
-ax1.set_yticks(np.arange(num_trials+1))
+ax1.set_yticks([1,3,5])
 ax1.set_ylabel("Trial")
-ax1.set_xlabel("t")
-ax1.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+ax1.axis(xmin=t[0]-1.25, xmax=t[-1]+1.25,ymin=0.2,ymax=num_trials+1.8)
 
 l1 = ax2.eventplot(PrelearnEvents2Step,colors=color_list)
 l2 = ax2.eventplot(LearnedEvents2Step, colors='tab:orange', linelengths=0.7)
-ax2.set_yticks(np.arange(num_trials+1))
-ax2.set_xlabel("t")
-ax2.axis(xmin=t[0]-1250, xmax=t[-1]+1250,ymin=0.2,ymax=num_trials+1.8)
+ax2.set_yticks([1,3,5])
+ax2.set_xlabel(r"t [$\times 10 ^3$]")
+ax2.axis(xmin=t[0]-1.25, xmax=t[-1]+1.25,ymin=0.2,ymax=num_trials+1.8)
 
 # Current plot
 axI = figStep.add_subplot(gs[1,:])
@@ -167,7 +168,7 @@ Istep = 0.4*np.ones(int(25000/0.1+1))
 Istep[:50000] = 0.2
 axI.plot(t[:-1], noise)
 axI.set_ylabel("I")
-axI.set_xlabel("t")
+axI.set_xlabel(r"t [$\times 10 ^3$]")
 
 # Time-series plot
 ax3 = figStep.add_subplot(gs[2, 0])
@@ -189,8 +190,8 @@ ax6.plot(t, RefStep[:,1], color='tab:red')
 for i in range(num_samps):
     ax6.plot(t, LearnedStep[i,:,1], color='tab:orange')
 ax5.set_ylabel("V")
-ax5.set_xlabel("t")
-ax6.set_xlabel("t")
+ax5.set_xlabel(r"t [$\times 10 ^3$]")
+ax6.set_xlabel(r"t [$\times 10 ^3$]")
 plt.savefig("sec5_LR_II_step.png")
 
 plt.show()
