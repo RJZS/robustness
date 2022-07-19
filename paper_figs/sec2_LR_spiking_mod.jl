@@ -96,7 +96,23 @@ pgain = plot(t/1000,asp_mod_plot,color="darkred",legend=false)
 xlabel!(L"t [x $10^3$]")
 ylabel!(L"$\alpha_{\rm{s}}^+$")
 
-savefig(CC,"sec2_LR_spiking_mod.pdf")
-savefig(pgain,"sec2_LR_spiking_mod_pgain.pdf")
+# savefig(CC,"sec2_LR_spiking_mod.pdf")
+# savefig(pgain,"sec2_LR_spiking_mod_pgain.pdf")
 
 CC
+
+l3 = @layout [
+    [a{1.0*w,0.7*h}
+    b{1.0*w,0.2*h}
+    c{1.0*w,0.1*h}] [d{1.0*w,0.7*h}
+                e{1.0*w,0.2*h}
+                f{1.0*w,0.1*h}]
+]
+pblank = plot(legend=false,grid=false,foreground_color_subplot=:white)  
+
+#l2 = @layout [
+#    [a{0.5*w,1.0*h} b{0.5*w,1.0*h}]; [c{0.5*w,0.6*h} d{0.5*w,0.6*h}]; e{1.0*w,0.2*h}
+#]
+#CC2 = plot(p1,p1zoom,p2,p2zoom,pgain,layout=l2,legend=false)
+CC3 = plot(p1,p2,pgain,p1zoom,p2zoom,pblank,layout=l3,legend=false)
+savefig(CC3,"sec2_spiking.pdf")

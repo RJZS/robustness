@@ -5,7 +5,7 @@ using DifferentialEquations, LinearAlgebra
 
 include("../LR_odes.jl")
 
-max_error = 0.2 # 0.1 gives a mismatch of up to +/- 5%
+max_error = 0.2 # 0.1 # 0.1 gives a mismatch of up to +/- 5%
 max_tau_error = 0.2 # 0.02
 
 # Modulation fn

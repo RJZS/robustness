@@ -67,7 +67,7 @@ p1=plot(sol.t/1000, sol[1,:],linewidth=1.5,legend=false)
 ylabel!("V")
 
 p1zoom=plot(sol.t/1000, sol[1,:],linewidth=1.5,legend=false,xlims=((ti3-50)/1000,(tf1+1250)/1000))
-xticks!([3000, 3500, 4000])
+xticks!([3, 3.5, 4])
 
 # Input current
 t=range(0.0,Tfinal,length=10000)
@@ -92,6 +92,7 @@ CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 
 asn_mod_plot = t -> asn_mod(t*1000)
 pgain = plot(t/1000,asn_mod_plot,color="darkred",legend=false)
+yticks!([-1.8, -1.6])
 xlabel!(L"t [x $10^3$]")
 ylabel!(L"$\alpha_{\rm{s}}^-$")
 
@@ -99,3 +100,14 @@ savefig(CC,"sec2_LR_bursting_mod.pdf")
 savefig(pgain,"sec2_LR_bursting_mod_pgain.pdf")
 
 CC
+
+l2 = @layout [
+    [a{1.0*w,0.7*h}
+    b{1.0*w,0.2*h}
+    c{1.0*w,0.1*h}] [d{1.0*w,0.7*h}
+                e{1.0*w,0.2*h}
+                f{1.0*w,0.1*h}]
+]
+pblank = plot(legend=false,grid=false,foreground_color_subplot=:white)  
+CC2 = plot(p1,p2,pgain,p1zoom,p2zoom,pblank,layout=l3,legend=false)
+savefig(CC2,"sec2_bursting.pdf")

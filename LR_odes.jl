@@ -1178,9 +1178,10 @@ function LR_observer_RefTrack!(du,u,p,t)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
+    kappa = 0.06
     du[10] = -V2  -element(V2,afn,dfn) -element(Vs2,asp,dsp) +
         -element(Vs2,asn2,dsn) -element(Vus2,ausp,dusp) + Iapp +
-        -element(Vs2,θ̂-asn2,dsn) # Control current
+        -element(Vs2,θ̂-asn2,dsn) + kappa * (V - V2)  # Control current
     du[11] = (1/tau_s)  * (V2 - Vs2)
     du[12] = (1/tau_us) * (V2 - Vus2)
 
@@ -1251,9 +1252,10 @@ function LR_observer_RefTrack_mis!(du,u,p,t)
     du[2] = (1/tau_s)  * (V - Vs)
     du[3] = (1/tau_us) * (V - Vus)
 
+    kappa = 0.06
     du[10] = -V2  -element(V2,afn,dfn) -element(Vs2,asp,dsp) +
         -element(Vs2,asn2,dsn) -element(Vus2,ausp,dusp) + Iapp +
-        -element(Vs2,θ̂-asn2,dsn) # Control current
+        -element(Vs2,θ̂-asn2,dsn) + kappa * (V - V2) # Control current
     du[11] = (1/tau_s)  * (V2 - Vs2)
     du[12] = (1/tau_us) * (V2 - Vus2)
 

@@ -120,9 +120,21 @@ CC = plot(p1,p2,p1zoom,p2zoom,layout=l,legend=false)
 asn2_mod_plot = t -> asn2_mod(t*1000)
 pgain = plot(t/1000,asn2_mod_plot,color="darkred",legend=false)
 xlabel!(L"t [x $10^3$]")
+yticks!([-1,-1.25,-1.5])
 ylabel!(L"$\alpha_{\rm{s},2}^-$")
 
 savefig(CC,"sec2_LR_II_mod.pdf")
 savefig(pgain,"sec2_LR_II_mod_pgain.pdf")
 
 CC
+
+l2 = @layout [
+    [a{1.0*w,0.7*h}
+    b{1.0*w,0.2*h}
+    c{1.0*w,0.1*h}] [d{1.0*w,0.7*h}
+                e{1.0*w,0.2*h}
+                f{1.0*w,0.1*h}]
+]
+pblank = plot(legend=false,grid=false,foreground_color_subplot=:white)  
+CC2 = plot(p1,p2,pgain,p1zoom,p2zoom,pblank,layout=l3,legend=false)
+savefig(CC2,"sec2_II.pdf")
