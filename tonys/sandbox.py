@@ -187,27 +187,27 @@ print("Elapsed (with compilation) = %s" % (end - start))
 
 
 # Now try learning the mismatched neuron
-cell3=neuron_diag(NumbaList(
+cell3=neuron(NumbaList(
             [gCaT,gKd,gH,gNa,gA,gCaL,gKCa,C,gleak,KdCa,kc]
         ),
              e_dyns,e_dyns,ob_type='Ca'
         )
-cell3.set_input(NumbaList([8,0,0,0,0,0,0,2,0,100]),0.000)
+cell3.set_input(NumbaList([4,0,0,0,0,0,0,2,0,100]),0.000)
 cell3.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
 cell3.set_tau(tmKCavec[0],1.,10.)
 gamma=2.
-alpha=0.004
+alpha=0.006
 variable_mask1=np.array([0.,0.,1.,0.,0.,0.,0.,1.]) # no synape connections so only 8 parameters
 cell3.set_hyp(gamma,alpha,variable_mask1)
 # get initial condition 
 X0=cell3.init_cond_OB(-60)
 
 # Make the initial condition easier
-X0[cell3.pos_dinamics+2] = 1 # Initial estimate of gT
-X0[cell3.pos_dinamics+7] = 1 # Initial estimate of gL
+X0[cell3.pos_dinamics+2] = 0.8 # Initial estimate of gT
+X0[cell3.pos_dinamics+7] = 5 # Initial estimate of gL
 
 # set simulation time
-Tfinal=5000.0
+Tfinal=20000.0
 tspan=[0.0,Tfinal]
 # start simulation and the timer 
 start = time.time()
@@ -216,9 +216,10 @@ end = time.time()
 print("Elapsed (with compilation) = %s" % (end - start))
 
 # Convergence of theta_hat
-idx_tmp = -600000
+idx_tmp = -80000
 plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3.pos_dinamics+2][idx_tmp:])
 plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3.pos_dinamics+7][idx_tmp:])
+plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[14,idx_tmp:]-solBurstCaObs.y[cell3.pos_p+12,idx_tmp:])
 
 # Learned parameters
 gTl = np.mean(solBurstCaObs.y[cell3.pos_dinamics+2][-1000:])

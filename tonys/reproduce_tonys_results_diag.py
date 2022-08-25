@@ -36,6 +36,7 @@ mis2=np.array([[0.9522494,  1.00529835],
  [1.00639862, 1.04303063]])
 
 mis3=(np.random.rand(12,2)*0.02-0.01)+1.0
+# mis3=(np.random.rand(12,2)*0.02-0.01)+1.0
 # mis3=(np.random.rand(12,2)*0.1-0.05)+1.0
 # mis3=np.array([[0.99613559, 0.99282902],
 #  [0.99108317, 1.00733338],
@@ -50,7 +51,8 @@ mis3=(np.random.rand(12,2)*0.02-0.01)+1.0
 #  [1.00636472, 0.99636941],
 #  [1.00368592, 1.00672459]])
 
-mis_t=(np.random.rand(12,4)*0.01-0.005)*2+1.0
+mis_t=(np.random.rand(12,4)*0.04-0.02)+1.0
+# mis_t=(np.random.rand(12,4)*0.01-0.005)*2+1.0
 # mis_t=(np.random.rand(12,4)*0.04-0.02)*2+1.0
 # mis_t=np.array([[1.00624955, 1.00653017, 0.99632439, 1.00371368],
 #  [0.99696342, 0.992745,   0.99533094, 0.9936827 ],
@@ -120,17 +122,20 @@ def sigmoid(x,tau):
     return 1/(1+exp(-tau*x))
 
 # Noise Generation
-noise=(np.random.normal(size=200000))*10 # sf for bursting
+noise=(np.random.normal(size=400000))*10 # sf for bursting
 noise[0]=0
 for i in range(len(noise)-1):
     noise[i+1]=noise[i]+(noise[i+1]-noise[i])/1000
 
 noise=(noise-noise.mean())*2
-plt.plot(noise[0:10000])
+plt.plot(noise[0:20000])
 print(noise.var())
-np.save('noise_diag_model.npy',noise)
+np.savez('noise_diag_model.npz',noise=noise,mis=mis3,mis_t=mis_t)
 
-# noise = np.load('noise_orig_model.npy')
+# loaded_data = np.load('noise_diag_model.npz')
+# noise = loaded_data['noise']
+# mis3 = loaded_data['mis']
+# mis_t = loaded_data['mis_t']
 
 ## Parameters for Bursting
 # Model parameters (global)
@@ -174,9 +179,9 @@ def noisy_input_neuron(t,u):
 
 X0=cell1d.init_cond(-0)
 # set simulation time
-Tfinal=10000.0
+Tfinal=20000.0
 tspan=[0.0,Tfinal]
-T=np.linspace(0., Tfinal, 100000)
+T=np.linspace(0., Tfinal, 200000)
 # start simulation and the timer 
 start = time.time()
 solBurstRef=odeint(noisy_input_neuron, X0,T,tfirst=True)
@@ -241,7 +246,7 @@ end = time.time()
 print("Elapsed (with compilation) = %s" % (end - start))
 
 # Convergence of theta_hat
-idx_tmp = -200000
+idx_tmp = -600000
 plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3d.pos_dinamics+2][idx_tmp:])
 plt.plot(solBurstCaObs.t[idx_tmp:], solBurstCaObs.y[cell3d.pos_dinamics+7][idx_tmp:])
 
@@ -265,9 +270,9 @@ def noisy_input_neuron4(t,u):
 # get initial condition 
 X0=cell4d.init_cond(-5)
 # set simulation time
-Tfinal=10000.0
+Tfinal=20000.0
 tspan=[0.0,Tfinal]
-T=np.linspace(0., Tfinal, 100000)
+T=np.linspace(0., Tfinal, 200000)
 # start simulation and the timer 
 start = time.time()
 solBurstLearned=odeint(noisy_input_neuron4, X0,T,tfirst=True)
@@ -277,66 +282,3 @@ print("Elapsed (with compilation) = %s" % (end - start))
 plt.plot(T,solBurstLearned[:,0])
 
 plt.plot(T,solBurstRef[:,0],T,0.8*solBurstLearned[:,0])
-
-## VOLTAGE OBSERVER
-## Now try learning with voltage instead of calcium
-cell5=neuron_diag(NumbaList(
-            [gCaT,gKd,gH,gNa,gA,gCaS,gKCa,C,gleak,KdCa,kc]
-        ),
-             e_dyns,dyns_time_act2,ob_type='V'
-        )
-cell5.set_input(NumbaList([2,0,0,0,0,0,0,2,0,100]),0.000)
-cell5.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell5.set_tau(tmKCavec[0],1.,10.)
-gamma=10.
-alpha=0.001
-variable_mask2=np.array([1.,1.,1.,1.,1.,0.,1.,1.]) # no synape connections so only 8 parameters
-cell5.set_hyp(gamma,alpha,variable_mask2)
-# get initial condition 
-X0=cell5.init_cond_OB(-60)
-
-# set simulation time
-Tfinal=20000.0
-tspan=[0.0,Tfinal]
-# start simulation and the timer 
-start = time.time()
-solBurstVObs=solve_ivp(cell5.OB_ODE_V_equ,tspan , X0)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-# Learned parameters
-gNalV = np.mean(solBurstVObs.y[cell5.pos_dinamics][-1000:])
-gHlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+1][-1000:])
-gTlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+2][-1000:])
-gAlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+3][-1000:])
-gKdlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+4][-1000:])
-# gleaklV = np.mean(solBurstVObs.y[cell5.pos_dinamics+5][-1000:])
-gKCalV = np.mean(solBurstVObs.y[cell5.pos_dinamics+6][-1000:])
-gSlV = np.mean(solBurstVObs.y[cell5.pos_dinamics+7][-1000:])
-
-# Now simulate learned mismatch neuron.
-cell6=neuron_diag(NumbaList(
-            [gTlV,gKdlV,gHlV,gNalV,gAlV,gSlV,gKCalV,C,gleak,KdCa,kc]
-        ),
-             dyns_time_act2,dyns_time_act2,ob_type='V'
-        )
-cell6.set_input(NumbaList([1.2,0,0,0,0,0,0,2,0,100]),0.000)
-cell6.set_rev(NumbaList([VNa,VCa,VK,VH,Vleak,VSyn]))
-cell6.set_tau(tmKCavec[0],1.,10.)
-
-def noisy_input_neuron6(t,u):
-    return cell6.equ_noise(t,u,noise[int(t*10)-1])
-    
-# get initial condition 
-X0=cell6.init_cond(-5)
-# set simulation time
-Tfinal=10000.0
-tspan=[0.0,Tfinal]
-T=np.linspace(0., Tfinal, 100000)
-# start simulation and the timer 
-start = time.time()
-solBurstVLearned=odeint(noisy_input_neuron6, X0,T,tfirst=True)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-plt.plot(T,solBurstVLearned[:,0])
