@@ -130,7 +130,8 @@ function CBM_v_dist_observer!(du,u,p,t)
     du[25] = (1/tau_mH(V,ha_ts[11])) * (mHinf(V,half_acts[11]) - mHh)
     du[26] = (1/tau_Ca) * ((-(αCa)*θ̂[4]*mCaLh*(V-VCa))+(-(β)*θ̂[5]*mCaTh*hCaTh*(V-VCa)) - Cah) 
 
+    # Can implement a different alpha for each theta.
     du[27:31]= γs .* P .* Ψ * (V-Vh); # dθ̂ 
     du[31+5+1:31+5+5] = -γs .* Ψ .+ ϕ̂;  # dΨ
-    du[31+1:31+5] = α*P .- α*P.*Ψ.*Ψ.*P # dP
+    du[31+1:31+5] = α1*P .- α1*P.*Ψ.*Ψ.*P # dP
 end

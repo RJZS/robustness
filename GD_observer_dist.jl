@@ -29,9 +29,9 @@ gCaT=0.5; # T-type calcium current maximal conductance
 gH=0.; # H-current maximal conductance
 
 # Observer parameters
-α1 = 0.008
-γ0 = 5 # 0.02
-γs = 5*ones(5) # 0.02*ones(5)
+α1 = 0.02 # 0.008
+γ0 = 10 # 30 # 0.02
+γs = 10 # 30*ones(5) # 0.02*ones(5)
 
 # Modelling errors
 # True values are (45, 60, 85) for (mCaL, mCaT, hCaT)
@@ -64,7 +64,7 @@ P₀ = ones(5)';
 Ψ₀ = [0 0 0 0 0];
 u0 = [x₀ x̂₀ θ̂₀ P₀ Ψ₀]' # Let's feed in a column vector.
 
-Tfinal= 2000.0 # 14500.0
+Tfinal= 30000.0 # 14500.0
 tspan=(0.0,Tfinal)
 
 ## Input current defition
