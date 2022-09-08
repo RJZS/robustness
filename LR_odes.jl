@@ -637,6 +637,76 @@ function LR_observer_noinact_nondiag!(du,u,p,t)
     du[10+1:10+16] = dP[:]
 end
 
+# 'Calcium' version.
+function LR_Ca_observer_noinact_nondiag!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+    # Input
+    Iapp = p[11]
+    delta_ests = p[12] # Estimated deltas (for uncertain model)
+    
+    α1   = p[13]
+    γ   = p[14]
+
+    tau_ests = p[15] # Estimated time constants (for uncertain model)
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+    Ca = u[4]
+
+    # ODEs
+    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
+                -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
+                Iapp(t)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+    du[4] = (1/tau_s) * (-element(Vs,asn,dsn)-element(Vus,ausp,dusp) - Ca) # 'Calcium'
+
+    # Adaptive Observer
+    Vh = u[5]
+    Vsh = u[6]
+    Vush = u[7]
+    Cah = u[8]
+    θ̂= u[9:10] # Just alpha_us.
+    P = reshape(u[10+1:10+4],2,2);    
+    P = (P+P')/2
+    Ψ = u[10+4+1:10+4+2]
+
+    # t > 30000 ? α = 0 : α = α1
+    α = α1 # For testing
+
+    ϕ̂ = [-element(Vsh,1,delta_ests[3]) ...
+    -element(Vush,1,delta_ests[4])]
+
+    du[5] = dot(ϕ̂,θ̂) -V -element(Vsh,1,delta_ests[2]) -
+    element(Vsh,1,delta_ests[3]) + Iapp(t)
+
+    du[6] = (1/tau_ests[1]) * (V - Vsh)
+    du[7] = (1/tau_ests[2]) * (V - Vush)
+    du[8] = (1/tau_ests[1]) * (dot(ϕ̂,θ̂) - 
+                                Ca) + γ*(1+Ψ'*P*Ψ)*(Ca-Cah)
+    
+    du[9:10]= γ*P*Ψ*(Ca-Cah); # dθ̂ 
+    du[10+4+1:10+4+2] = -γ*Ψ + ϕ̂;  # dΨ
+    dP = α*P - α*((P*Ψ)*(P*Ψ)');
+    # dP = α*P - γ*((P*Ψ)*(P*Ψ)'); # Then need gamma > 1 I think.
+    dP = (dP+dP')/2;
+    du[10+1:10+4] = dP[:]
+end
+
 # Diagonalised version of v observer.
 function LR_observer_noinact!(du,u,p,t)
     # Gains
