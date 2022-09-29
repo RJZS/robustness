@@ -29,14 +29,15 @@ xh0 = [-1 -1 -1]
 θ̂₀ = [.1 .1 .1 .1];
 P₀ = Matrix(I, 4, 4);
 Ψ₀ = [0 0 0 0];
-u0 = [x0 xh0 θ̂₀ P₀[:]' Ψ₀ Ψ₀]
+bf1 = 0; bf2 = 0; Gdvh = 0;
+u0 = [x0 xh0 θ̂₀ P₀[:]' Ψ₀ Ψ₀ bf1 bf2 Gdvh]
 
-Tfinal= 19000.0
+Tfinal= 14000.0
 tspan=(0.0,Tfinal)
 
-γ = 0.2
-α = 0.0004
-β = 1
+γ = 2.
+α = 0.00001
+β = 5.
 g = 5
 
 Iapp = t -> -2.
@@ -64,3 +65,5 @@ p4 = plot(sol.t,sol[9,:])
 p5 = plot(sol.t,sol[10,:])
 
 pe
+
+pf = plot(sol.t, sol[37,:]) # Plot of filtered ̂v.

@@ -1418,4 +1418,60 @@ function LR_observer_newfilter!(du,u,p,t)
     dP = α*g*P - g*((P*Ψ_γ)*(P*Ψ_γ)');
     dP = (dP+dP')/2;
     du[10+1:10+16] = dP[:]
+
+    # Want to plot G \hat{\dot{v}}. For that, need G \hat{b}.
+    # Simpler than plotting true G ̇v, as already have Ψ_γ for the estimate.
+    bh = - V + Iapp(t);
+    du[35] = -β * u[35] + bh # dbf1, that's b through one filter.
+    du[36] = -γ * u[36] + u[35] # dbf2
+    u[37] = γ*β*dot(Ψ_γ, θ̂) + γ*β*u[36]  # Is this correct?
+end
+
+# Want to plot Gsv for bandpass filter, to see what's in the cost function.
+function LR_plot_Gsv!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+    # Input
+    Iapp = p[11]
+    
+    γ   = p[12]
+    β = p[13]
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    # ODEs
+    ϕ = [-element(V,1,dfn) ...
+        -element(Vs,1,dsp) ...
+        -element(Vs,1,dsn) ...
+        -element(Vus,1,dusp)]
+    θ = [afn asp asn ausp]
+    du[1] = -V  +dot(ϕ,θ) +
+                Iapp(t)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    Ψ_γ = u[4:7]
+    Ψ_β = u[8:11]
+
+    du[4:7] = -γ*Ψ_γ + Ψ_β;  # dΨ_γ
+    du[8:11] = -β*Ψ_β + ϕ; # dΨ_β
+
+    b = - V + Iapp(t);
+    du[12] = -β * u[12] + b # dbf1, that's b through one filter.
+    du[13] = -γ * u[13] + u[12] # dbf2
+    u[14] = γ*β*dot(Ψ_γ, θ) + γ*β*u[13]  # Is this correct?
 end
