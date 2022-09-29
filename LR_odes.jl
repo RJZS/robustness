@@ -1350,3 +1350,71 @@ function LR_observer_RefTrack_mis!(du,u,p,t)
     du[9] = -γ*Ψ + ϕ̂;  # dΨ
     du[8] = α*P - γ*P.^2 .* Ψ.^2;
 end
+
+# Trying new filer. Based on 'LR_observer_noinact_nondiag!'
+function LR_observer_newfilter!(du,u,p,t)
+    # Gains
+    afn = p[1]
+    asp = p[2]
+    asn = p[3]
+    ausp = p[4]
+    # Offsets
+    dfn = p[5]
+    dsp = p[6]
+    dsn = p[7]
+    dusp = p[8]
+    # Time constants
+    tau_s = p[9]
+    tau_us = p[10]
+    # Input
+    Iapp = p[11]
+    delta_ests = p[12] # Estimated deltas (for uncertain model)
+    
+    α1   = p[13]
+    γ   = p[14]
+    β = p[15]
+
+    tau_ests = p[16] # Estimated time constants (for uncertain model)
+    
+    # Variables
+    V = u[1]
+    Vs = u[2]
+    Vus = u[3]
+
+    # ODEs
+    du[1] = -V  -element(V,afn,dfn) -element(Vs,asp,dsp) +
+                -element(Vs,asn,dsn) -element(Vus,ausp,dusp) +
+                Iapp(t)
+    du[2] = (1/tau_s)  * (V - Vs)
+    du[3] = (1/tau_us) * (V - Vus)
+
+    # Adaptive Observer
+    Vh = u[4]
+    Vsh = u[5]
+    Vush = u[6]
+    θ̂= u[7:10]
+    P = reshape(u[10+1:10+16],4,4);    
+    P = (P+P')/2
+    # P = u[11:14]
+    Ψ_γ = u[27:30]
+    Ψ_β = u[31:34]
+
+    t > 30000 ? α = 0 : α = α1
+
+    ϕ̂ = [-element(V,1,delta_ests[1]) ...
+        -element(Vsh,1,delta_ests[2]) ...
+        -element(Vsh,1,delta_ests[3]) ...
+        -element(Vush,1,delta_ests[4])]
+
+    du[4] = dot(ϕ̂,θ̂) -V  + Iapp(t) + γ*β*(1+Ψ_γ'*P*Ψ_γ)*(V-Vh)
+
+    du[5] = (1/tau_ests[1]) * (V - Vsh)
+    du[6] = (1/tau_ests[2]) * (V - Vush)
+    
+    du[7:10]= γ*β*P*Ψ_γ*(V-Vh); # dθ̂ 
+    du[27:30] = -γ*Ψ_γ + Ψ_β;  # dΨ_γ
+    du[31:34] = -β*Ψ_β + ϕ̂; # dΨ_β
+    dP = α*P - γ*β*((P*Ψ_γ)*(P*Ψ_γ)');
+    dP = (dP+dP')/2;
+    du[10+1:10+16] = dP[:]
+end
