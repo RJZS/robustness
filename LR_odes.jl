@@ -1373,8 +1373,9 @@ function LR_observer_newfilter!(du,u,p,t)
     α1   = p[13]
     γ   = p[14]
     β = p[15]
+    g = p[16]
 
-    tau_ests = p[16] # Estimated time constants (for uncertain model)
+    tau_ests = p[17] # Estimated time constants (for uncertain model)
     
     # Variables
     V = u[1]
@@ -1411,10 +1412,10 @@ function LR_observer_newfilter!(du,u,p,t)
     du[5] = (1/tau_ests[1]) * (V - Vsh)
     du[6] = (1/tau_ests[2]) * (V - Vush)
     
-    du[7:10]= γ*β*P*Ψ_γ*(V-Vh); # dθ̂ 
+    du[7:10]= g*P*Ψ_γ*(V-Vh); # dθ̂ 
     du[27:30] = -γ*Ψ_γ + Ψ_β;  # dΨ_γ
     du[31:34] = -β*Ψ_β + ϕ̂; # dΨ_β
-    dP = α*P - γ*β*((P*Ψ_γ)*(P*Ψ_γ)');
+    dP = α*g*P - g*((P*Ψ_γ)*(P*Ψ_γ)');
     dP = (dP+dP')/2;
     du[10+1:10+16] = dP[:]
 end

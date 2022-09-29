@@ -31,17 +31,18 @@ P₀ = Matrix(I, 4, 4);
 Ψ₀ = [0 0 0 0];
 u0 = [x0 xh0 θ̂₀ P₀[:]' Ψ₀ Ψ₀]
 
-Tfinal= 16000.0
+Tfinal= 19000.0
 tspan=(0.0,Tfinal)
 
-γ = 2
+γ = 0.2
 α = 0.0004
-β = 5
+β = 1
+g = 5
 
 Iapp = t -> -2.
 
 # Parameter vector for simulations
-p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp,delta_ests,α,γ,β,[tau_s,tau_us])
+p=(afn,asp,asn,ausp,dfn,dsp,dsn,dusp,tau_s,tau_us,Iapp,delta_ests,α,γ,β,g,[tau_s,tau_us])
 
 # Simulation
 # Using the calcium observer
@@ -55,7 +56,11 @@ p1=plot(sol.t, sol[1,:],linewidth=1.5,legend=false)
 plot!(sol.t,sol[4,:])
 ylabel!("V")
 
+pe = plot(sol.t, sol[1,:].-sol[4,:])
+
 p2 = plot(sol.t,sol[7,:])
 p3 = plot(sol.t,sol[8,:])
 p4 = plot(sol.t,sol[9,:])
 p5 = plot(sol.t,sol[10,:])
+
+pe
